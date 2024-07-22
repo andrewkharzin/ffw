@@ -1,0 +1,19 @@
+{
+   "arrival_activity":"Деятельность при прибытии",
+   "table":{
+      "created_at":"Создано в",
+      "documents_time":"Время документов",
+      "offload_permition_time":"Время разрешения на разгрузку",
+      "offload_bulk_time_start":"Начало времени разгрузки навалом",
+      "offload_bulk_time_end":"Конец времени разгрузки навалом",
+      "offload_ld_forward_time_start":"Начало времени разгрузки LD впереди",
+      "offload_ld_forward_time_end":"Конец времени разгрузки LD впереди",
+      "offload_md_time_start":"Начало времени разгрузки MD",
+      "offload_md_time_end":"Конец времени разгрузки MD",
+      "offload_ld_aft_time_start":"Начало времени разгрузки LD сзади",
+      "offload_ld_aft_time_end":"Конец времени разгрузки LD сзади",
+      "id":"ID",
+      "ramp_check_id":"ID проверки на рампе"
+   },
+   "no_data":"Нет информации о прибытии для этой проверки на рампе."
+}
