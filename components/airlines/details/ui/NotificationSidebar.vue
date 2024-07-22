@@ -60,7 +60,11 @@
                   <div
                     class="text-sm font-normal text-[0.5rem] text-gray-700 dark:text-slate-400 subpixel-antialiased cursor-pointer hover:dark:text-slate-200"
                   >
-                    <NuxtLink to="/">{{ event.event_title }}</NuxtLink>
+                    <NuxtLink
+                      :to="`/airlines/airline-${event.airline_name}/notification/${event.id}`"
+                    >
+                      {{ event.event_title }}
+                    </NuxtLink>
                   </div>
                 </div>
               </div>

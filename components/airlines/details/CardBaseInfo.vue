@@ -45,7 +45,7 @@ const props = defineProps({
     </template>
     <div class="grid grid-cols-2 gap-2">
       <div class="text-sm font-sans">
-        <p class="font-normal text-gray-400">
+        <p class="mt-10 font-normal text-gray-400">
           IATA:
           <span class="font-bold text-cyan-600">{{ airline?.iata }}</span>
         </p>

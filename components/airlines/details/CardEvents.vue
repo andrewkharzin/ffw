@@ -2,7 +2,7 @@
 <script setup lang="ts">
 // Import necessary functions and types
 import { defineProps } from 'vue'
-import type { Database } from '@/types/supabase.ts'
+import type { Database } from '@/types/supabase'
 
 // Define the props for the component
 const props = defineProps({
@@ -50,7 +50,7 @@ const latestEvent = computed(() => {
   return props.events.reduce((latest, current) =>
     new Date(current.event_timestamp) > new Date(latest.event_timestamp)
       ? current
-      : latest,
+      : latest
   )
 })
 
@@ -80,7 +80,7 @@ watch(
       }, 2000) // Hide after 5 seconds
     }
   },
-  { immediate: true },
+  { immediate: true }
 )
 </script>
 
@@ -143,9 +143,7 @@ watch(
 
 .slide-enter-active,
 .slide-leave-active {
-  transition:
-    transform 0.5s ease,
-    opacity 0.5s ease;
+  transition: transform 0.5s ease, opacity 0.5s ease;
 }
 .slide-enter, .slide-leave-to /* .slide-leave-active in <2.1.8 */ {
   transform: translateY(10px);

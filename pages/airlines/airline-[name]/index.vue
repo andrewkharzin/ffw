@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Database } from '@/types/supabase.ts'
+import type { Database } from '@/types/supabase'
 const route = useRoute()
 // compiler micro
 definePageMeta({ layout: 'page' })
@@ -49,7 +49,7 @@ const specificEvent = computed(() => {
   <LayoutsPageWrapper>
     <!-- Bread -->
     <UBreadcrumb :links="links" class="p-4" />
-    <LayoutPageSection>
+    <LayoutsPageSection>
       <!-- Page bar for airline detail page -->
       <div
         class="w-full p-4 h-15 bg-gray-500 dark:bg-slate-900 rounded-tl-lg rounded-br-lg"
@@ -79,7 +79,7 @@ const specificEvent = computed(() => {
           />
         </div>
       </div>
-    </LayoutPageSection>
+    </LayoutsPageSection>
   </LayoutsPageWrapper>
 </template>
 
