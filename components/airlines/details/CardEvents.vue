@@ -77,7 +77,7 @@ watch(
       showPing.value = true
       setTimeout(() => {
         showPing.value = false
-      }, 2000) // Hide after 5 seconds
+      }, 1000) // Hide after 5 seconds
     }
   },
   { immediate: true }

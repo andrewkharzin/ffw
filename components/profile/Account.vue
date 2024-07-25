@@ -1,128 +1,70 @@
-<!-- eslint-disable camelcase -->
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watchEffect } from 'vue'
 
 const supabase = useSupabaseClient()
-const user = useSupabaseUser()
+const { user } = useSupabaseUser()
+const userId = ref('')
+const avatarUrl = ref('')
 
-const loading = ref(true)
-const username = ref('')
-const website = ref('')
-// eslint-disable-next-line camelcase
-const avatar_path = ref('')
-
-const fetchProfile = async () => {
-  loading.value = true
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('username, website, avatar_url')
-    .eq('id', user.value.id)
-    .single()
-
-  if (data) {
-    username.value = data.username
-    website.value = data.website
-    // eslint-disable-next-line camelcase
-    avatar_path.value = data.avatar_url
-  } else if (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error fetching profile:', error.message)
+// Fetch user profile data
+const fetchUserProfile = async () => {
+  if (!user.value) {
+    console.error('User not authenticated')
+    return
   }
 
-  loading.value = false
-}
+  userId.value = user.value.id
 
-const updateProfile = async () => {
   try {
-    loading.value = true
-
-    const updates = {
-      id: user.value.id,
-      username: username.value,
-      website: website.value,
-      avatar_url: avatar_path.value,
-      updated_at: new Date(),
-    }
-
-    const { error } = await supabase.from('profiles').upsert(updates, {
-      returning: 'minimal', // Don't return the value after inserting
-    })
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('avatar_url')
+      .eq('id', userId.value)
+      .single()
 
     if (error) throw error
+    avatarUrl.value = data.avatar_url
   } catch (error) {
-    alert(error.message)
-  } finally {
-    loading.value = false
+    console.error('Error fetching user profile: ', error.message)
   }
 }
 
-const signOut = async () => {
+const updateAvatarUrl = async (path) => {
+  if (!userId.value) {
+    console.error('User ID not available')
+    return
+  }
+
   try {
-    loading.value = true
-    const { error } = await supabase.auth.signOut()
+    const { error } = await supabase
+      .from('profiles')
+      .update({ avatar_url: path })
+      .eq('id', userId.value)
+
     if (error) throw error
+    avatarUrl.value = path
   } catch (error) {
-    alert(error.message)
-  } finally {
-    loading.value = false
+    console.error('Error updating avatar URL: ', error.message)
   }
 }
 
-onMounted(() => {
-  fetchProfile()
+watchEffect(() => {
+  if (user.value) {
+    fetchUserProfile()
+  }
 })
 </script>
 
 <template>
-  <form class="" @submit.prevent="updateProfile">
+  <div>
     <ProfileUserAvatar
-      v-model:path="avatar_path"
-      class="md:flex md:flex-col md:items-start sm:w-full"
-      @upload="updateProfile"
+      :id="userId.value"
+      :avatarUrl="avatarUrl.value"
+      @update:path="updateAvatarUrl"
     />
-    <!-- <ProfileAvatar v-model:path="avatar_path" @upload="updateProfile" /> -->
-
-    <div class="space-y-4">
-      <UFormGroup>
-        <UInput
-          :placeholder="user.email"
-          icon="i-heroicons-envelope"
-          disabled
-          class="sm:w-full md:w-[400px] lg:w-[400px]"
-        />
-      </UFormGroup>
-      <UFormGroup>
-        <UInput
-          id="username"
-          v-model="username"
-          :placeholder="username"
-          icon="i-heroicons-user"
-          class="sm:w-full md:w-[400px] lg:w-[400px]"
-        />
-      </UFormGroup>
-
-      <UButton type="submit" class="w-full" :disabled="loading">
-        {{ loading ? 'Loading ...' : 'Update' }}
-      </UButton>
-      <UButton
-        size="sm"
-        color="red"
-        class="w-full"
-        variant="soft"
-        :disabled="loading"
-        @click="signOut"
-      >
-        Sign Out
-      </UButton>
-    </div>
-  </form>
+  </div>
 </template>
 
 <style scoped>
-.form-widget {
-  display: flex;
-  /* flex-direction: column; */
-  gap: 1rem;
-  padding: 1rem;
-}
+/* Add any additional styling you need */
 </style>

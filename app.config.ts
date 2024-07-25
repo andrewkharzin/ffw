@@ -14,25 +14,25 @@ export default defineAppConfig({
       page: {
         navbar: {
           menus: [
-            { type: 'link', title: 'Blank', to: { name: 'blank' } },
-            { type: 'link', title: 'Post', to: { name: 'post' } },
+            { type: 'link', title: 'Reference', to: { name: 'references-dgr-un' } },
+            // { type: 'link', title: 'Post', to: { name: 'post' } },
             { type: 'link', title: 'Airlines', to: { name: 'airlines' } },
-            {
-              type: 'dropdown',
-              title: 'Flow',
-              children: [
-                {
-                  type: 'link',
-                  title: 'Components',
-                  to: { name: 'docs-components' },
-                },
-                {
-                  type: 'link',
-                  title: 'Airlines',
-                  to: { name: 'airlines' },
-                },
-              ],
-            },
+            // {
+            //   type: 'dropdown',
+            //   title: 'Flow',
+            //   children: [
+            //     {
+            //       type: 'link',
+            //       title: 'Components',
+            //       to: { name: 'docs-components' },
+            //     },
+            //     {
+            //       type: 'link',
+            //       title: 'Airlines',
+            //       to: { name: 'airlines' },
+            //     },
+            //   ],
+            // },
             { type: 'button', title: 'Setting', to: { name: 'setting' } },
             // dynamic title
             // {

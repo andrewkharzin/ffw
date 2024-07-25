@@ -47,4 +47,11 @@ const links = [
   gap: 16px;
   padding: 16px;
 }
+
+/* Add media query for smaller screens */
+@media (max-width: 640px) {
+  .airlines-grid {
+    grid-template-columns: 1fr; /* Single column layout on small screens */
+  }
+}
 </style>

@@ -13,11 +13,9 @@ const props = defineProps({
 })
 
 const { id, avatarUrl } = toRefs(props)
-
-const emit = defineEmits(['update:path', 'upload'])
+const emit = defineEmits(['update:path'])
 
 const supabase = useSupabaseClient()
-
 const fileInput = ref(null)
 const uploading = ref(false)
 const src = ref(avatarUrl.value)
@@ -52,8 +50,8 @@ const uploadAvatar = async (evt) => {
 
     const file = files.value[0]
     const fileExt = file.name.split('.').pop()
-    const fileName = `${Math.random()}.${fileExt}`
-    const filePath = `${fileName}`
+    const fileName = `${Math.random().toString(36).substr(2, 9)}.${fileExt}`
+    const filePath = `public/${fileName}`
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
@@ -62,7 +60,6 @@ const uploadAvatar = async (evt) => {
     if (uploadError) throw uploadError
 
     emit('update:path', filePath)
-    emit('upload')
     src.value = URL.createObjectURL(file)
   } catch (error) {
     alert(error.message)
@@ -73,8 +70,8 @@ const uploadAvatar = async (evt) => {
 
 downloadImage()
 
-watch(avatarUrl, () => {
-  if (avatarUrl.value) {
+watch(avatarUrl, (newValue) => {
+  if (newValue) {
     downloadImage()
   }
 })
@@ -115,7 +112,6 @@ watch(avatarUrl, () => {
 
 <style scoped>
 .avatar.no-image {
-  /* Default size for the avatar without an image */
   width: 10em;
   height: 10em;
 }

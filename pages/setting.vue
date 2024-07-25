@@ -38,11 +38,11 @@ const validate = async () => {
   // fetch username from github api
   try {
     const response = await fetch(
-      `https://api.github.com/users/${username.value}`,
+      `https://api.github.com/users/${username.value}`
     )
     if (response.status !== 200) {
       throw new Error(
-        `error when fetching username : ${response.statusText} (${response.status})`,
+        `error when fetching username : ${response.statusText} (${response.status})`
       )
     }
     const data = (await response.json()) as {
@@ -100,45 +100,14 @@ const validate = async () => {
           <HeadlessTabPanels class="flex-1">
             <!-- general -->
             <HeadlessTabPanel>
-              <AwesomeCard class="mb-6">
+              <AwesomeCard class="mb-6 w-1/2">
                 <AwesomeCardContent>
-                  <AwesomeCardTitle
-                    class="capitalize"
-                    text="validate github profile"
-                  />
-                  <p class="mb-2">
-                    type your github username and click the button to validate.
-                  </p>
-                  <div class="flex">
-                    <AwesomeFormTextInput
-                      v-model="username"
-                      class="w-full md:w-1/3"
-                    >
-                      <template #prefix-disabled>
-                        <span class="flex-1 px-4 py-2">github.com/</span>
-                      </template>
-                    </AwesomeFormTextInput>
-                  </div>
+                  <AwesomeCardTitle class="capitalize" />
+                  <!-- <ProfileAccount /> -->
                 </AwesomeCardContent>
-                <AwesomeCardFooter
-                  class="flex flex-col space-y-2 md:space-y md:flex-row items-center md:justify-between"
-                >
-                  <p>
-                    Learn more about
-                    <AwesomeLink
-                      class="underline font-bold capitalize"
-                      text="github users api"
-                      href="https://docs.github.com/en/rest/users/users#get-a-user"
-                    />
-                  </p>
-                  <AwesomeButton
-                    class="capitalize"
-                    size="sm"
-                    type="opposite"
-                    text="validate"
-                    @click="validate"
-                  />
-                </AwesomeCardFooter>
+                <!-- <AwesomeCardFooter
+
+                </AwesomeCardFooter> -->
               </AwesomeCard>
               <AwesomeCard class="mb-4">
                 <AwesomeCardContent>

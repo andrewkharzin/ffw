@@ -36,6 +36,8 @@
   },
   "devDependencies": {
     "@iconify-json/heroicons-outline": "^1.1.10",
+    "@iconify-json/mdi": "^1.1.67",
+    "@iconify-json/uil": "^1.1.8",
     "@nuxt/image": "^1.7.0",
     "@nuxtjs/color-mode": "^3.4.2",
     "@nuxtjs/eslint-config-typescript": "^12.1.0",

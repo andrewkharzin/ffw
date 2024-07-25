@@ -31,6 +31,8 @@ const props = defineProps({
       aircraft_id: string | null
       logo: string | null
       awb_code: string | null
+      callsign: string | null
+      website: string | null
     },
     required: true,
   },
@@ -69,14 +71,26 @@ const props = defineProps({
       </div>
     </template>
     <div class="grid grid-cols-2 gap-2">
-      <div class="text-sm font-sans">
-        <p class="font-normal text-gray-400">
+      <div class="font-sans">
+        <p class="text-[0.6rem] font-normal text-gray-400">
           IATA:
-          <span class="font-bold text-cyan-600">{{ airline.iata }}</span>
+          <span class="text-[0.6rem] font-bold text-cyan-600">{{
+            airline.iata
+          }}</span>
         </p>
-        <p class="font-normal text-gray-400">
+        <p class="text-[0.6rem] font-normal text-gray-400">
           ICAO:
-          <span class="font-bold text-cyan-600">{{ airline.icao }}</span>
+          <span class="text-[0.6rem] font-bold text-cyan-600">{{
+            airline.icao
+          }}</span>
+        </p>
+      </div>
+      <div>
+        <p class="text-[0.6rem] font-normal text-gray-400">
+          CALLSIGN:
+          <span class="text-[0.6rem] font-bold text-cyan-600">{{
+            airline.callsign
+          }}</span>
         </p>
       </div>
     </div>

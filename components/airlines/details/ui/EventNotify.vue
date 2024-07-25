@@ -24,17 +24,20 @@
                 {{ latestEvent.event_date }}
               </span>
             </div>
-            <div
-              class="text-sm text-[0.5rem] dark:text-slate-400 dark:text-gray-300"
-            >
+            <div class="text-sm text-[0.5rem] dark:text-slate-600">
               {{ latestEvent.event_type }}
             </div>
             <div
               class="text-sm font-normal text-[0.4rem] text-gray-700 dark:text-slate-400 subpixel-antialiased cursor-pointer hover:dark:text-slate-200"
             >
               <NuxtLink to="/">
-                {{ latestEvent.event_title }}
+                <p class="truncate text-clip md:text-clip">
+                  {{ latestEvent.event_title }}
+                </p>
               </NuxtLink>
+              <div class="text-xs text-gray-500 dark:text-slate-600 mt-1">
+                {{ timeAgo }}
+              </div>
             </div>
           </div>
         </div>
@@ -45,7 +48,7 @@
 
 <script setup>
 import { computed } from 'vue'
-
+import { formatDistanceToNow } from 'date-fns'
 
 const props = defineProps({
   events: {
@@ -59,8 +62,15 @@ const latestEvent = computed(() => {
   return props.events.reduce((latest, current) =>
     new Date(current.event_timestamp) > new Date(latest.event_timestamp)
       ? current
-      : latest,
+      : latest
   )
+})
+
+const timeAgo = computed(() => {
+  if (!latestEvent.value) return ''
+  return formatDistanceToNow(new Date(latestEvent.value.event_timestamp), {
+    addSuffix: true,
+  })
 })
 
 const transitionKey = computed(() => {
@@ -80,9 +90,7 @@ const transitionKey = computed(() => {
 
 .slide-enter-active,
 .slide-leave-active {
-  transition:
-    transform 0.5s ease,
-    opacity 0.5s ease;
+  transition: transform 0.5s ease, opacity 0.5s ease;
 }
 .slide-enter,
   .slide-leave-to /* .slide-leave-active in <2.1.8 */ {

@@ -56,16 +56,36 @@ const specificEvent = computed(() => {
       >
         <div class="flex items-center flex-wrap">
           <NuxtImg :src="airline?.logo" class="w-8 h-8" />
-          <h1
-            class="mt-2 mr-4 font-sans font-black dark:text-gray-400 md:text-lg lg:text-xl sm:text-xs"
-          >
-            {{ airline?.name }}
-          </h1>
+          <div class="ml-4">
+            <h1
+              class="font-sans font-black dark:text-gray-400 md:text-lg lg:text-xl sm:text-xs"
+            >
+              {{ airline?.name }}
+            </h1>
+            <p
+              class="text-xs font-bold text-cyan-600 cursor-pointer hover:text-cyan-400 font-normal text-gray-400"
+            >
+              <AwesomeLink
+                class="font-bold"
+                :text="airline?.website"
+                :href="airline?.website"
+              />
+              <!-- <a
+                :href="airline?.website"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-xs font-bold text-cyan-600 cursor-pointer hover:text-cyan-400"
+              >
+                {{ airline?.website }}
+              </a> -->
+            </p>
+          </div>
           <div class="ml-auto">
             <AirlinesNotificationBar />
           </div>
         </div>
       </div>
+
       <!-- End of page bar -->
 
       <div class="cards-grid">
