@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { Database } from '@/types/supabase'
-const route = useRoute()
 // compiler micro
 definePageMeta({ layout: 'page' })
 useHead({ title: 'Airline Detail' })
@@ -13,6 +12,8 @@ const event = ref<
   Database['public']['Tables']['airlines_realtime_events']['Row'] | null
 >()
 
+const route = useRoute()
+const airlineId = route.params.airlineId || ''
 const colorMode = useColorMode()
 
 const links = [
@@ -81,7 +82,7 @@ const specificEvent = computed(() => {
             </p>
           </div>
           <div class="ml-auto">
-            <AirlinesNotificationBar />
+            <AirlinesNotificationBar :airlineId="airline?.id" />
           </div>
         </div>
       </div>
@@ -89,14 +90,18 @@ const specificEvent = computed(() => {
       <!-- End of page bar -->
 
       <div class="cards-grid">
-        <div class="flex-initial w-full">
+        <div class="mt-5 flex-initial w-full">
           <AirlinesDetailsCardBaseInfo :airline="airline" />
         </div>
-        <div>
+        <div class="mt-5">
           <AirlinesDetailsCardEvents
             :airline="airline"
             :events="filteredEvents"
           />
+        </div>
+        <div class="mt-5 w-full">
+          <!-- <AirlinesDetailsCardAircrafts :airline="airline" /> -->
+          <AirlinesDetailsCardAircratfs :airlineId="airline?.id" />
         </div>
       </div>
     </LayoutsPageSection>

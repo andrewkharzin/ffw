@@ -21,13 +21,13 @@ const links = [
 
 <template>
   <LayoutsPageWrapper>
-    <LayoutPageSection>
-      <LayoutPageHeader>
+    <LayoutsPageSection>
+      <LayoutsPageHeader>
         <UBreadcrumb :links="links" class="p-4" />
         <div class="mt-5">
           <AirlinesAppBar />
         </div>
-      </LayoutPageHeader>
+      </LayoutsPageHeader>
 
       <div class="airlines-grid">
         <AirlinesCard
@@ -36,7 +36,7 @@ const links = [
           :airline="airline"
         />
       </div>
-    </LayoutPageSection>
+    </LayoutsPageSection>
   </LayoutsPageWrapper>
 </template>
 

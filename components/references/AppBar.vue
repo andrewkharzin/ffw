@@ -1,8 +1,6 @@
 <template>
-  <header
-    class="mx-4 bg-gray-200 dark:bg-slate-900 p-4 flex justify-between items-center rounded-md"
-  >
-    <div class="flex space-x-4">
+  <header class="mx-4 bg-gray-200 dark:bg-slate-900 rounded-md">
+    <div class="">
       <ReferencesUiUnFilter @filter="handleFilter" />
     </div>
   </header>

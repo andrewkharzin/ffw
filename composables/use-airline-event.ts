@@ -115,8 +115,12 @@ import type { Database } from '@/types/supabase'
 export function useAirlineEvent() {
   const supabase = useSupabaseClient()
 
-  const events = ref<Database['public']['Tables']['airlines_realtime_events']['Row'][]>([])
-  const event = ref<Database['public']['Tables']['airlines_realtime_events']['Row'] | null>(null)
+  const events = ref<
+    Database['public']['Tables']['airlines_realtime_events']['Row'][]
+  >([])
+  const event = ref<
+    Database['public']['Tables']['airlines_realtime_events']['Row'] | null
+  >(null)
   const queryClient = useQueryClient()
 
   const fetchInitialEvents = async () => {
@@ -142,8 +146,10 @@ export function useAirlineEvent() {
   }
 
   const fetchEventById = async (eventId) => {
-    const { data, error } = await supabase.from('airlines_realtime_events')
-      .select(`
+    const { data, error } = await supabase
+      .from('airlines_realtime_events')
+      .select(
+        `
         id,
         event_type,
         event_timestamp,
@@ -154,7 +160,8 @@ export function useAirlineEvent() {
         event_description,
         user_id,
         user:profiles (avatar_url, username)
-      `)
+      `,
+      )
       .eq('id', eventId)
       .single()
 
@@ -241,4 +248,3 @@ export function useAirlineEvent() {
 
   return { events, event, fetchEventById }
 }
-

@@ -1,83 +1,60 @@
-<!-- eslint-disable vue/require-toggle-inside-transition -->
+<!-- components/AirlineAircrafts.vue -->
 <script setup lang="ts">
 // Import necessary functions and types
+import { ref, onMounted, watch, computed } from 'vue'
 import { defineProps } from 'vue'
-import type { Database } from '@/types/supabase'
 
 // Define the props for the component
 const props = defineProps({
-  airline: {
-    type: Object as () => {
-      id: string
-      iata: string | null
-      icao: string | null
-      name: string | null
-      aircraft_id: string | null
-      logo: string | null
-      awb_code: string | null
-    },
-    required: true,
-  },
-  events: {
-    type: Array as () => Array<
-      Database['public']['Tables']['airlines_realtime_events']['Row']
-    >,
-    required: true,
-  },
-  user: {
-    type: Object as () => Record<
-      string,
-      Database['public']['Tables']['profiles']['Row']
-    >,
+  airlineId: {
+    type: String,
     required: true,
   },
 })
 
-// Compute the count of events
-const eventCount = computed(() => props.events.length)
-// Compute the most recent event
-// const latestEvent = computed(() => {
-//   if (props.events.length === 0) return null
-//   return props.events.reduce((latest, current) =>
-//     new Date(current.event_timestamp) > new Date(latest.event_timestamp)
-//       ? current
-//       : latest,
-//   )
-// })
+// Fetch the aircrafts for the airline
+const { aircrafts, loading, error, fetchAircrafts } = useRegisterByAirline()
 
-const latestEvent = computed(() => {
-  if (props.events.length === 0) return null
-  return props.events.reduce((latest, current) =>
-    new Date(current.event_timestamp) > new Date(latest.event_timestamp)
-      ? current
-      : latest
-  )
+onMounted(() => {
+  if (props.airlineId) {
+    fetchAircrafts(props.airlineId)
+  }
 })
+
+watch(
+  () => props.airlineId,
+  (newId) => {
+    if (newId) {
+      fetchAircrafts(newId)
+    }
+  }
+)
 
 // Unique key for transition to avoid duplicate entries
 const transitionKey = computed(() => {
-  return latestEvent.value ? latestEvent.value.event_timestamp : 'no-events'
+  return aircrafts.value.length > 0 ? aircrafts.value[0].id : 'no-aircrafts'
 })
+
 // Reactive property for ping effect
 const showPing = ref(false)
 
-const notificationSidebar = ref(null)
+const fleetSidebar = ref(null)
 
 const openSidebar = () => {
-  if (notificationSidebar.value) {
-    notificationSidebar.value.open()
+  if (fleetSidebar.value) {
+    fleetSidebar.value.open()
   }
 }
 
-// Trigger ping effect when a new event is added
+// Trigger ping effect when new aircrafts are added
 watch(
-  () => props.events,
-  (newEvents) => {
-    if (newEvents.length > 0) {
+  () => aircrafts.value,
+  (newAircrafts) => {
+    if (newAircrafts.length > 0) {
       showPing.value = true
       setTimeout(() => {
         showPing.value = false
-      }, 1000) // Hide after 5 seconds
+      }, 1000) // Hide after 1 second
     }
   },
   { immediate: true }
@@ -89,19 +66,19 @@ watch(
     <template #header>
       <div class="relative flex items-center space-x-4 dark:text-slate-400">
         <!-- Icon -->
-        <Icon name="carbon:event" size="25px" />
+        <Icon name="twemoji:airplane" size="25px" />
 
-        <!-- Event Header -->
+        <!-- Aircrafts Header -->
         <div class="relative flex items-center">
-          <span class="text-xs text-tiny mr-8"> Events </span>
-          <!-- Badge for event count with animation -->
+          <span class="text-xs text-tiny mr-8"> Aircrafts </span>
+          <!-- Badge for aircraft count with animation -->
           <span
             class="absolute right-0 flex items-center justify-center w-6 h-6 rounded-lg bg-blue-500 text-white text-sm font-medium cursor-pointer"
             :class="{ 'animate-ping': showPing }"
             :style="{ opacity: showPing ? 0 : 1 }"
             @click="openSidebar"
           >
-            {{ eventCount }}
+            {{ aircrafts.length }}
           </span>
         </div>
 
@@ -121,15 +98,17 @@ watch(
         </div>
       </div>
     </template>
-    <AirlinesDetailsUiEventNotify :events="events" />
+    <div v-if="loading" class="">Loading...</div>
+    <div v-if="error" class="text-red-500">{{ error }}</div>
+    <!-- <AirlinesDetailsAircraftAirlineList
+      v-if="!loading && !error"
+      :aircrafts="aircrafts"
+    /> -->
     <template #footer>
       <div class="flex flex-row">Footer</div>
     </template>
   </UCard>
-  <AirlinesDetailsUiNotificationSidebar
-    ref="notificationSidebar"
-    :events="events"
-  />
+  <AirlinesDetailsUiFleetSidebar ref="fleetSidebar" :aircrafts="aircrafts" />
 </template>
 
 <style scoped>

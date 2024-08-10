@@ -2,7 +2,7 @@ import type { AppConfigInput } from 'nuxt/schema'
 
 export default defineAppConfig({
   awesome: {
-    name: 'Nuxt 3 Awesome Starter',
+    name: 'FFis',
     description:
       'a starter template for Nuxt 3 with minimalist themes design, built in components, drawer & menus, and more.',
     project: {
@@ -14,7 +14,11 @@ export default defineAppConfig({
       page: {
         navbar: {
           menus: [
-            { type: 'link', title: 'Reference', to: { name: 'references-dgr-un' } },
+            {
+              type: 'link',
+              title: 'References',
+              to: { name: 'references' },
+            },
             // { type: 'link', title: 'Post', to: { name: 'post' } },
             { type: 'link', title: 'Airlines', to: { name: 'airlines' } },
             // {

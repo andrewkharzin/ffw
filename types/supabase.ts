@@ -14,58 +14,81 @@ export type Database = {
           ac_airline_iata: string | null
           ac_code: string | null
           ac_model: string | null
+          ac_ramp_image: string | null
           ac_registration_number: string | null
           ac_schema_image: string | null
+          airline_id: string | null
           id: string
         }
         Insert: {
           ac_airline_iata?: string | null
           ac_code?: string | null
           ac_model?: string | null
+          ac_ramp_image?: string | null
           ac_registration_number?: string | null
           ac_schema_image?: string | null
+          airline_id?: string | null
           id?: string
         }
         Update: {
           ac_airline_iata?: string | null
           ac_code?: string | null
           ac_model?: string | null
+          ac_ramp_image?: string | null
           ac_registration_number?: string | null
           ac_schema_image?: string | null
+          airline_id?: string | null
           id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "aircrafts_register_airline_id_fkey"
+            columns: ["airline_id"]
+            isOneToOne: false
+            referencedRelation: "airlines"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       airlines: {
         Row: {
           aircraft_id: string | null
           awb_code: string | null
+          callsign: string | null
           handling: Database["public"]["Enums"]["airline_handling"] | null
+          Hubs: string | null
           iata: string | null
           icao: string | null
           id: string
           logo: string | null
           name: string | null
+          website: string | null
         }
         Insert: {
           aircraft_id?: string | null
           awb_code?: string | null
+          callsign?: string | null
           handling?: Database["public"]["Enums"]["airline_handling"] | null
+          Hubs?: string | null
           iata?: string | null
           icao?: string | null
           id?: string
           logo?: string | null
           name?: string | null
+          website?: string | null
         }
         Update: {
           aircraft_id?: string | null
           awb_code?: string | null
+          callsign?: string | null
           handling?: Database["public"]["Enums"]["airline_handling"] | null
+          Hubs?: string | null
           iata?: string | null
           icao?: string | null
           id?: string
           logo?: string | null
           name?: string | null
+          website?: string | null
         }
         Relationships: []
       }
@@ -109,6 +132,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "airlines_realtime_events_user_id_fkey1"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -581,18 +611,35 @@ export type Database = {
       }
       messages: {
         Row: {
+          createdAt: string | null
           id: string
-          message_id: string | null
+          message: string | null
+          nickName: string | null
+          user_id: string | null
         }
         Insert: {
+          createdAt?: string | null
           id?: string
-          message_id?: string | null
+          message?: string | null
+          nickName?: string | null
+          user_id?: string | null
         }
         Update: {
+          createdAt?: string | null
           id?: string
-          message_id?: string | null
+          message?: string | null
+          nickName?: string | null
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

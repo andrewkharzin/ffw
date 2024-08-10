@@ -40,7 +40,9 @@ const props = defineProps({
 </script>
 
 <template>
-  <UCard class="hover:shadow-lg rounded-tl-3xl rounded-br-3xl">
+  <UCard
+    class="hover:shadow-lg rounded-tl-3xl rounded-br-3xl rounded-bl-sm rounded-tr-sm"
+  >
     <template #header>
       <div class="flex flex-row space-x-4">
         <NuxtImg
@@ -104,14 +106,27 @@ const props = defineProps({
             }}</span>
           </p>
         </div>
-        <div class="justify-end">
+        <!-- FTI ( Fucking truble index of airline) -->
+
+        <!-- <div class="justify-end">
           <p class="text-xs font-extralight text-red-400/55 font-mono">
             FTI
             <span class="text-md font-bold text-teal-400 font-mono">
               <UBadge color="white" variant="solid">76%</UBadge>
-              <!-- <UMeter :value="76" indicator /> -->
-            </span>
-          </p>
+             <UMeter :value="76" indicator /> -->
+        <!-- </span>
+          </p> -->
+        <!-- </div>  -->
+        <div class="justify-end">
+          <!-- <NuxtLink to="/ramp/check/list">
+            <UButton
+              icon="i-heroicons-arrow-path-rounded-square"
+              size="xs"
+              color="gray"
+              variant="solid"
+              >RAMP</UButton
+            >
+          </NuxtLink> -->
         </div>
       </div>
     </template>

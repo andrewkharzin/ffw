@@ -3,7 +3,7 @@
     class="mx-4 bg-gray-200 dark:bg-slate-900 p-4 flex justify-between items-center rounded-md"
   >
     <div class="flex space-x-4">
-      <AirlinesFilterSelect />
+      <!-- <AirlinesFilterSelect /> -->
     </div>
   </header>
 </template>

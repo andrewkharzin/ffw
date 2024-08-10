@@ -1,55 +1,41 @@
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 
 export const useRefCodes = () => {
   const supabase = useSupabaseClient()
 
-  const dgrClasses = ref([])
-  const loadingClasses = ref(false)
-  const errorClasses = ref(null)
-
   const dgrUnList = ref([])
   const loadingUnList = ref(false)
   const errorUnList = ref(null)
+  const currentPage = ref(1)
+  const itemsPerPage = ref(10)
+  const totalItems = ref(0)
+  const searchQuery = ref('')
 
-  const fetchDgrClasses = async () => {
-    loadingClasses.value = true
-    errorClasses.value = null
-
-    try {
-      const { data, error } = await supabase
-        .from('dgr_classes')
-        .select('*')
-        .order('label', { ascending: true })
-
-      if (error) throw error
-
-      dgrClasses.value = data
-    } catch (err) {
-      errorClasses.value = err.message
-    } finally {
-      loadingClasses.value = false
-    }
-  }
-
-  const fetchDgrUnList = async (unNumber = null) => {
+  const fetchDgrUnList = async (
+    unNumber,
+    page = 1,
+    limit = itemsPerPage.value,
+  ) => {
     loadingUnList.value = true
     errorUnList.value = null
 
     try {
       let query = supabase
         .from('dgr_un_list')
-        .select('*')
+        .select('*', { count: 'exact' })
         .order('un_number', { ascending: true })
+        .range((page - 1) * limit, page * limit - 1)
 
-      if (unNumber !== null) {
+      if (unNumber) {
         query = query.eq('un_number', unNumber)
       }
 
-      const { data, error } = await query
+      const { data, error, count } = await query
 
       if (error) throw error
 
       dgrUnList.value = data
+      totalItems.value = count || 0
     } catch (err) {
       errorUnList.value = err.message
     } finally {
@@ -57,20 +43,27 @@ export const useRefCodes = () => {
     }
   }
 
+  const changePage = (page) => {
+    currentPage.value = page
+    fetchDgrUnList(searchQuery.value, currentPage.value, itemsPerPage.value)
+  }
 
-  onMounted(() => {
-    fetchDgrClasses()
-    fetchDgrUnList()
-  })
+  const search = (unNumber) => {
+    searchQuery.value = unNumber
+    currentPage.value = 1
+    fetchDgrUnList(unNumber, currentPage.value, itemsPerPage.value)
+  }
 
   return {
-    dgrClasses,
-    loadingClasses,
-    errorClasses,
-    fetchDgrClasses,
     dgrUnList,
     loadingUnList,
     errorUnList,
     fetchDgrUnList,
+    currentPage,
+    itemsPerPage,
+    totalItems,
+    changePage,
+    search,
+    searchQuery,
   }
 }

@@ -1,11 +1,10 @@
 <template>
   <div class="p-4">
-    <UInput
+    <input
       v-model="unNumber"
-      @input="filterUnList"
-      type="number"
       placeholder="Enter UN Number"
-      class="p-2 border rounded w-full"
+      class="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-base focus:ring-slate-700 focus:border-slate-700 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-700 dark:focus:border-slate-700"
+      @input="filterUnList"
     />
   </div>
 </template>

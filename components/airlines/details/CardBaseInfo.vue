@@ -19,7 +19,7 @@ const props = defineProps({
 </script>
 
 <template>
-  <UCard class="hover:shadow-lg rounded-tl-3xl rounded-br-3xl w-full">
+  <UCard class="hover:shadow-lg rounded-sm w-full">
     <template #header>
       <div class="flex flex-row space-x-4 dark:text-slate-400">
         <Icon name="material-symbols:info-outline" size="25px" />
