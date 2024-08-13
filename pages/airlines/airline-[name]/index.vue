@@ -44,6 +44,7 @@ const specificEvent = computed(() => {
   // You can adjust the condition to match your use case.
   return events.value.find((e) => e.id === event.value?.id) || null
 })
+console.log('Parent component loaded, airlineId:', airline?.id)
 </script>
 
 <template>
@@ -102,6 +103,10 @@ const specificEvent = computed(() => {
         <div class="mt-5 w-full">
           <!-- <AirlinesDetailsCardAircrafts :airline="airline" /> -->
           <AirlinesDetailsCardAircratfs :airlineId="airline?.id" />
+        </div>
+        <!-- Add the new AirlineRampCheckActivity component -->
+        <div class="mt-5 w-full">
+          <AirlinesDetailsCardRampActivity :airlineId="airline?.id" />
         </div>
       </div>
     </LayoutsPageSection>
