@@ -4,8 +4,23 @@
     <UBreadcrumb :links="links" class="p-4" />
 
     <LayoutsPageSection>
-      <div v-if="loading" class="p-4 dark:bg-slate-800 dark:text-white">
-        Loading aircrafts...
+      <!-- Show loading skeletons if data is still loading and delay has passed -->
+      <div
+        v-if="loading && showSkeleton"
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+      >
+        <!-- Skeletons for UCard while loading -->
+        <div
+          v-for="n in 4"
+          :key="n"
+          class="rounded-lg bg-slate-800 text-white p-4"
+        >
+          <USkeleton width="100%" height="25px" class="mb-4" />
+          <USkeleton width="70%" height="15px" class="mb-2" />
+          <USkeleton width="50%" height="15px" class="mb-2" />
+          <USkeleton width="100%" height="150px" class="mb-4" />
+          <USkeleton width="30%" height="30px" />
+        </div>
       </div>
 
       <div v-if="error" class="p-4 dark:bg-red-800 dark:text-white">
@@ -96,10 +111,17 @@ const route = useRoute()
 
 const { aircrafts, loading, error, fetchAircrafts } = useRegisterByAirline()
 
+// State to control the display of the skeleton
+const showSkeleton = ref(false)
+
 onMounted(() => {
   if (route.params.id) {
     fetchAircrafts(route.params.id as string)
   }
+  // Set a delay for showing the skeleton loader
+  setTimeout(() => {
+    showSkeleton.value = true
+  }, 2500) // 500ms delay
 })
 </script>
 

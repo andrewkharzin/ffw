@@ -74,23 +74,23 @@ const props = defineProps({
     </template>
     <div class="grid grid-cols-2 gap-2">
       <div class="font-sans">
-        <p class="text-[0.6rem] font-normal text-gray-400">
+        <p class="text-[0.8rem] font-normal text-gray-400">
           IATA:
-          <span class="text-[0.6rem] font-bold text-cyan-600">{{
+          <span class="text-[0.8rem] font-bold text-cyan-600">{{
             airline.iata
           }}</span>
         </p>
-        <p class="text-[0.6rem] font-normal text-gray-400">
+        <p class="text-[0.8rem] font-normal text-gray-400">
           ICAO:
-          <span class="text-[0.6rem] font-bold text-cyan-600">{{
+          <span class="text-[0.8rem] font-bold text-cyan-600">{{
             airline.icao
           }}</span>
         </p>
       </div>
       <div>
-        <p class="text-[0.6rem] font-normal text-gray-400">
+        <p class="text-[0.8rem] font-normal text-gray-400">
           CALLSIGN:
-          <span class="text-[0.6rem] font-bold text-cyan-600">{{
+          <span class="text-[0.8rem] font-bold text-cyan-600">{{
             airline.callsign
           }}</span>
         </p>
