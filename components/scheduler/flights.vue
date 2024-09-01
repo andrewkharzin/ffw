@@ -5,7 +5,7 @@
       <h2
         class="font-semibold text-xl text-gray-900 dark:text-white leading-tight"
       >
-        Flights
+        Flights {{ isArrival ? 'Arrivals' : 'Departures' }} at SVO
       </h2>
     </template>
 
@@ -38,6 +38,21 @@
       </div>
 
       <div class="flex gap-1.5 items-center">
+        <!-- Toggle Button for Departures/Arrivals -->
+        <UToggle
+          v-model="isArrival"
+          color="primary"
+          size="md"
+          on-icon="i-heroicons-check-20-solid"
+          off-icon="i-heroicons-x-mark-20-solid"
+          @update:model-value="toggleFlightType"
+        />
+
+        <UButton color="gray" size="sm" @click="toggleFlightType">
+          {{ isArrival ? 'Departures' : 'Arrivals' }}
+        </UButton>
+
+        <!-- Dropdown and Action Buttons -->
         <UDropdown
           v-if="selectedRows.length > 1"
           :items="actions"
@@ -48,22 +63,26 @@
             trailing
             color="gray"
             size="xs"
-            >Mark as</UButton
           >
+            Mark as
+          </UButton>
         </UDropdown>
+
         <USelectMenu v-model="selectedColumns" :options="columns" multiple>
-          <UButton icon="i-heroicons-view-columns" color="gray" size="xs"
-            >Columns</UButton
-          >
+          <UButton icon="i-heroicons-view-columns" color="gray" size="xs">
+            Columns
+          </UButton>
         </USelectMenu>
+
         <UButton
           icon="i-heroicons-funnel"
           color="gray"
           size="xs"
           :disabled="!isFilterActive"
           @click="resetFilters"
-          >Reset</UButton
         >
+          Reset
+        </UButton>
       </div>
     </div>
 
@@ -81,53 +100,105 @@
       :ui="tableUi"
       @select="select"
     >
-      <template #status-data="{ row }">
-        <UBadge
-          size="xs"
-          :label="row.status"
-          :color="statusColor(row.status)"
-          variant="subtle"
-        />
-      </template>
-
+      <!-- Custom Renderers -->
+      <!-- Replace the #row-number-data with a clickable trigger -->
       <template #airline-data="{ row }">
-        {{ row.airline.name }}
+        <div class="flex items-center space-x-3">
+          <div
+            class="flex items-center justify-center w-8 h-auto border border-gray-200/40 , rounded-tl-lg rounded-br-lg bg-slate-900 text-gray-200 text-sm font-bold p-2 cursor-pointer"
+            @click="fetchFlightDetails(row.number)"
+          >
+            {{ row.airline.iata }}
+          </div>
+          <div class="flex flex-col">
+            <div class="dark:text-green-400 text-sm font-semibold">
+              {{ row.number }}
+            </div>
+            <div class="text-gray-300 font-bold text-xs">
+              {{ row.airline.name }}
+            </div>
+          </div>
+        </div>
       </template>
 
-      <template #aircraft-reg-data="{ row }">
-        {{ row.aircraft.reg }}
+      <template #aircraft.reg-data="{ row }">
+        <div class="flex flex-col">
+          <p class="font-bold text-md font-mono text-slate-300">
+            {{ row.aircraft.reg }}
+          </p>
+          <span class="text-tiny text-xs">{{ row.aircraft.model }}</span>
+        </div>
       </template>
 
-      <template #departure-scheduledTime-local-data="{ row }">
-        {{ row.departure.scheduledTime.local }}
+      <template #movement.scheduledTime.local-data="{ row }">
+        <div class="flex flex-col">
+          <p class="text-md font-semibold text-red-300 font-mono">
+            {{
+              row.movement.scheduledTime.local
+                ? formatAndLogTime(row.movement.scheduledTime.local)
+                : 'N/A'
+            }}
+          </p>
+        </div>
       </template>
 
-      <template #arrival-scheduledTime-local-data="{ row }">
-        {{ row.arrival.scheduledTime.local }}
+      <template #arrival.scheduledTime.local-data="{ row }">
+        <div>
+          <p class="text-md font-semibold text-red-300 font-mono">
+            {{
+              row.arrival?.scheduledTime?.local
+                ? formatAndLogTime(row.arrival.scheduledTime.local)
+                : 'N/A'
+            }}
+          </p>
+        </div>
       </template>
 
-      <template #gate-data="{ row }">
-        {{ row.gate }}
+      <template #movement.airport.iata-data="{ row }">
+        <div v-if="row.movement && row.movement.airport" class="flex flex-col">
+          <div class="flex">
+            <span class="text-xs font-bold font-mono">
+              {{ row.movement.airport.iata }} {{ ' ' }}|
+            </span>
+            <span
+              class="uppercase ml-2 text-xs font-bold font-mono text-teal-400"
+            >
+              {{ row.movement.airport.name }}
+            </span>
+          </div>
+          <span class="text-xs font-bold font-mono">
+            {{ row.movement.airport.icao }}
+          </span>
+        </div>
+        <div v-else class="flex flex-col">
+          <span class="text-xs font-bold font-mono text-gray-500">N/A</span>
+          <span class="text-xs font-bold font-mono text-gray-500">N/A</span>
+        </div>
       </template>
-      <template #actions-data="{ row }">
-        <UButton
-          v-if="row.status !== 'Departed'"
-          icon="i-heroicons-check"
-          size="2xs"
-          color="emerald"
-          variant="outline"
-          :ui="{ rounded: 'rounded-full' }"
-          square
-        />
-        <UButton
-          v-else
-          icon="i-heroicons-arrow-path"
-          size="2xs"
-          color="orange"
-          variant="outline"
-          :ui="{ rounded: 'rounded-full' }"
-          square
-        />
+      <template #status-data="{ row }">
+        <span
+          :class="[
+            'px-2 py-1 rounded-full text-white text-sm font-semibold',
+            getStatusClass(row.status),
+          ]"
+        >
+          <UIcon
+            v-if="getStatusIcon(row.status)"
+            :name="getStatusIcon(row.status)"
+            class="text-white"
+          />
+          {{ row.status }}
+        </span>
+      </template>
+
+      <template #isCargo-data="{ row }">
+        <div>
+          <UIcon
+            :name="
+              row.isCargo ? 'emojione:airplane' : 'emojione-monotone:airplane'
+            "
+          />
+        </div>
       </template>
     </UTable>
 
@@ -149,17 +220,71 @@
         />
       </div>
     </template>
+    <!-- Slideover Component -->
+    <SchedulerSlideFlightDetail
+      :modelValue="isOpen"
+      :flightDetails="selectedFlightDetails"
+      @update:modelValue="isOpen = $event"
+      @close="handleClose"
+    />
   </UCard>
-  <pre>{{ paginatedFlights }}</pre>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { formatInTimeZone } from 'date-fns-tz'
+import { enUS } from 'date-fns/locale'
 
-const props = defineProps<{
-  flightsData: any[]
-  filterType: string
-}>()
+// State variables
+const isArrival = ref(false) // Toggle state: false -> Departures, true -> Arrivals
+const isUtc = ref(false) // For UTC/Local toggle
+
+// // Composable to fetch flights data
+// const { flightsData, loading, fetchFlights, pageTotal } = useRapid()
+// // Composable to fetch flights data
+const {
+  flightsData,
+  loading,
+  fetchFlights,
+  fetchFlightInfoByNumber,
+  pageTotal,
+} = useRapid()
+
+// State variables
+const isOpen = ref(false) // State for Slideover visibility
+const selectedFlightDetails = ref<any>(null) // Store selected flight details
+
+// Handle close event from Slideover component
+const handleClose = () => {
+  selectedFlightDetails.value = null
+  isOpen.value = false
+}
+
+const fetchCurrentFlights = () => {
+  const iataCode = 'SVO' // Use a valid IATA code here
+  fetchFlights(iataCode)
+}
+
+const toggleFlightType = () => {
+  console.log('Toggling flight type. Current state:', isArrival.value)
+  isArrival.value = !isArrival.value
+  console.log('New state:', isArrival.value)
+  fetchCurrentFlights()
+}
+
+onMounted(() => {
+  fetchCurrentFlights()
+})
+
+// Utility function to format time
+const formatAndLogTime = (timeString: string) => {
+  const date = new Date(timeString)
+  const formatString = 'dd/MM | HH:mm '
+  const timeZone = isUtc.value
+    ? 'UTC'
+    : Intl.DateTimeFormat().resolvedOptions().timeZone
+  return formatInTimeZone(date, timeZone, formatString)
+}
 
 // UI configurations
 const cardUi = {
@@ -182,131 +307,129 @@ const paginationUi = {
   default: { activeButton: { variant: 'outline' } },
 }
 
-// Data and Computed properties
-// const columns = [
-//   { key: 'airlineInfo', label: 'Airline Info', sortable: false },
-//   { key: 'aircraftReg', label: 'Aircraft Registration', sortable: true },
-//   { key: 'departureTime', label: 'Departure Time', sortable: true },
-//   { key: 'arrivalTime', label: 'Arrival Time', sortable: true },
-//   { key: 'status', label: 'Status', sortable: false },
-//   { key: 'terminal', label: 'Terminal', sortable: false },
-//   { key: 'gate', label: 'Gate', sortable: false },
-// ]
-
-const columns = [
-  { key: 'airline', label: 'Airline Info', sortable: false },
-  { key: 'aircraft.reg', label: 'Aircraft Registration', sortable: true },
+// Columns for the table
+const columns = ref([
+  { key: 'airline', label: 'Airline', sortable: false },
+  { key: 'aircraft.reg', label: 'Registration', sortable: false },
   {
-    key: 'departure.scheduledTime.local',
-    label: 'Departure Time',
+    key: 'movement.scheduledTime.local',
+    label: 'Dep/Time',
     sortable: true,
   },
-  { key: 'arrival.scheduledTime.local', label: 'Arrival Time', sortable: true },
-  { key: 'status', label: 'Status', sortable: false },
-  { key: 'departure.terminal', label: 'Terminal', sortable: false },
-  { key: 'departure.gate', label: 'Gate', sortable: false },
-]
+  // { key: 'arrival.scheduledTime.local', label: 'Arr/Time', sortable: true },
+  { key: 'movement.airport.iata', label: 'Dest/IATA', sortable: true },
+  { key: 'status', label: 'Status', sortable: true },
+  { key: 'isCargo', label: 'Cargo', sortable: false },
+])
 
-const selectedColumns = ref(columns)
-
-// const columnsTable = computed(() =>
-//   columns.filter((column) => selectedColumns.value.includes(column))
-// )
-const columnsTable = computed(() =>
-  columns.filter((column) =>
-    selectedColumns.value.some((selected) => selected.key === column.key)
-  )
-)
-
-const selectedRows = ref<any[]>([])
-function select(row: any) {
-  const index = selectedRows.value.findIndex((item) => item.id === row.id)
-  if (index === -1) selectedRows.value.push(row)
-  else selectedRows.value.splice(index, 1)
-}
-
-const actions = [
-  [{ key: 'completed', label: 'Completed', icon: 'i-heroicons-check' }],
-  [
-    {
-      key: 'uncompleted',
-      label: 'In Progress',
-      icon: 'i-heroicons-arrow-path',
-    },
-  ],
-]
-
-const statusOptions = [
-  { key: 'departed', label: 'Departed', value: 'Departed' },
-  { key: 'scheduled', label: 'Scheduled', value: 'Scheduled' },
-  { key: 'checkIn', label: 'CheckIn', value: 'CheckIn' },
-  { key: 'canceled', label: 'Canceled', value: 'Canceled' },
-]
-
+const selectedColumns = ref(columns.value.map((col) => col.key))
+const selectedStatus = ref<string[]>([])
 const search = ref('')
-const selectedStatus = ref<any[]>([])
-const statusFilter = computed(() =>
-  selectedStatus.value.length > 0
-    ? selectedStatus.value.map((status) => status.value)
-    : []
-)
-
-const isFilterActive = computed(
-  () => search.value !== '' || selectedStatus.value.length > 0
-)
-
-const sort = ref({ column: 'airlineInfo', direction: 'asc' as const })
 const page = ref(1)
-const pageCount = ref(10)
-const pageTotal = ref(0)
-const pageFrom = computed(() => (page.value - 1) * pageCount.value + 1)
+const pageCount = ref(20)
+const sort = ref<{ key: string; order: 'asc' | 'desc' }>({
+  key: 'departure.scheduledTime.local',
+  order: 'asc',
+})
+const selectedRows = ref<any[]>([])
+
+const filteredFlights = computed(() => {
+  const data = isArrival.value
+    ? flightsData.value.arrivals
+    : flightsData.value.departures
+
+  let filtered = Array.isArray(data) ? data : []
+
+  if (selectedStatus.value.length) {
+    filtered = filtered.filter((flight) =>
+      selectedStatus.value.includes(flight.status)
+    )
+  }
+
+  if (search.value) {
+    filtered = filtered.filter((flight) =>
+      Object.values(flight).some(
+        (value) =>
+          typeof value === 'string' &&
+          value.toLowerCase().includes(search.value.toLowerCase())
+      )
+    )
+  }
+
+  return filtered
+})
+
+// Pagination
+const paginatedFlights = computed(() => {
+  const start = (page.value - 1) * pageCount.value
+  return Array.isArray(filteredFlights.value)
+    ? filteredFlights.value.slice(start, start + pageCount.value)
+    : []
+})
+
+const pageFrom = computed(() =>
+  Math.min((page.value - 1) * pageCount.value + 1, filteredFlights.value.length)
+)
 const pageTo = computed(() =>
-  Math.min(page.value * pageCount.value, pageTotal.value)
+  Math.min(page.value * pageCount.value, filteredFlights.value.length)
 )
 
-// Use the useRapid composable
-const {
-  flightsData,
-  loading,
-  error,
-  fetchFlights,
-  pageTotal: apiPageTotal,
-} = useRapid()
-
-watch([search, statusFilter, page, pageCount], async () => {
-  await fetchFlights('SVO') // Fetch flights data based on IATA code
-  pageTotal.value = apiPageTotal.value
+// Column configuration based on departure/arrival toggle
+const columnsTable = computed(() => {
+  return columns.value.filter((col) => selectedColumns.value.includes(col.key))
 })
 
-const paginatedFlights = computed(() => {
-  return props.flightsData
-    .filter((flight: any) => {
-      return (
-        statusFilter.value.length === 0 ||
-        statusFilter.value.includes(flight.status)
-      )
-    })
-    .slice((page.value - 1) * pageCount.value, page.value * pageCount.value)
-})
+// Actions for dropdown
+const actions = [
+  { label: 'As on Time', icon: 'i-heroicons-clock-20-solid' },
+  { label: 'As Cancelled', icon: 'i-heroicons-x-circle-20-solid' },
+  { label: 'As Delayed', icon: 'i-heroicons-exclamation-circle-20-solid' },
+]
 
-const resetFilters = () => {
-  search.value = ''
-  selectedStatus.value = []
-}
-
-const statusColor = (status: string) => {
+// Method to get the appropriate class based on flight status
+const getStatusClass = (status: string) => {
   switch (status) {
     case 'Departed':
-      return 'emerald'
-    case 'Scheduled':
-      return 'orange'
+      return 'bg-green-600'
+    case 'Canceled':
+      return 'bg-gray-600'
+    case 'Boarding':
+      return 'bg-pink-500'
+    case 'EnRoute':
+      return 'bg-green-800'
+    case 'Arrived':
+      return 'bg-slate-300 uppercase font-bold flex items-center space-x-1'
     default:
-      return 'gray'
+      return 'bg-gray-400'
   }
 }
 
-// console.log('Flights Data:', props.flightsData)
-// console.log('Filter Type:', props.filterType)
-// console.log('Filtered Flights:', paginatedFlights.value)
-console.log('Flight Data Structure:', props.flightsData[0])
+// Method to get the appropriate icon based on flight status
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case 'Arrived':
+      return 'mdi-airplane-landing' // Example icon name for Arrived status
+    default:
+      return null // No icon for other statuses
+  }
+}
+
+// Fetch flight details on row click
+const fetchFlightDetails = async (flightNumber: string) => {
+  const flightDetails = await fetchFlightInfoByNumber(flightNumber)
+  selectedFlightDetails.value = flightDetails
+  isOpen.value = true // Open the slideover
+}
+
+// Reset filters
+const resetFilters = () => {
+  search.value = ''
+  selectedStatus.value = []
+  page.value = 1
+}
+
+watch(isArrival, () => {
+  page.value = 1 // Reset to first page on toggle change
+  fetchCurrentFlights()
+})
 </script>

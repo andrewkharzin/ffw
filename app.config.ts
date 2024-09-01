@@ -19,6 +19,11 @@ export default defineAppConfig({
               title: 'References',
               to: { name: 'references' },
             },
+            {
+              type: 'link',
+              title: 'Flights',
+              to: { name: 'flights' },
+            },
             // { type: 'link', title: 'Post', to: { name: 'post' } },
             { type: 'link', title: 'Airlines', to: { name: 'airlines' } },
             // {

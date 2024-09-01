@@ -1,0 +1,495 @@
+<script lang="ts" setup>
+import { ref, computed } from 'vue'
+import { formatOnlyDate, formatOnlyTime } from '@/configs/date_util'
+import { Icon } from '@iconify/vue'
+// Props
+const props = defineProps<{
+  freighters: any[]
+  loading: boolean
+}>()
+
+// Columns
+const columns = [
+  {
+    key: 'Airline_info',
+    label: 'Airline',
+    sortable: false,
+  },
+  {
+    key: 'Date',
+    label: 'Date',
+    sortable: true,
+  },
+  // {
+  //   key: 'flight_pst',
+  //   label: 'Time',
+  //   sortable: false,
+  // },
+
+  // {
+  //   key: 'flight_number',
+  //   label: 'Flight Number',
+  //   sortable: true,
+  // },
+  {
+    key: 'flight_route',
+    label: 'Route',
+    sortable: true,
+  },
+  {
+    key: 'flight_handling_status',
+    label: 'Status',
+    sortable: true,
+  },
+  // {
+  //   key: 'actions',
+  //   label: 'Actions',
+  //   sortable: false,
+  // },
+]
+
+const selectedColumns = ref(columns)
+const columnsTable = computed(() =>
+  columns.filter((column) => selectedColumns.value.includes(column))
+)
+
+// Selected Rows
+const selectedRows = ref([])
+
+function select(row) {
+  const index = selectedRows.value.findIndex((item) => item.id === row.id)
+  if (index === -1) {
+    selectedRows.value.push(row)
+  } else {
+    selectedRows.value.splice(index, 1)
+  }
+}
+
+// Pagination (Example, can be adjusted)
+const sort = ref({ column: 'id', direction: 'asc' as const })
+const page = ref(1)
+const pageCount = ref(10)
+const pageTotal = computed(() => props.freighters.length)
+const pageFrom = computed(() => (page.value - 1) * pageCount.value + 1)
+const pageTo = computed(() =>
+  Math.min(page.value * pageCount.value, pageTotal.value)
+)
+// const logoSrc = computed(() => props.freighters.airlines.logo || '')
+
+function getStatusColor(status: string): string {
+  switch (status) {
+    case 'New':
+      return 'pink'
+    case 'Canceled':
+      return 'gray'
+    case 'InPlan':
+      return 'sky'
+    case 'Completed':
+      return 'emerald'
+    default:
+      return 'orange' // default color if status is not recognized
+  }
+}
+
+// Reactivity for selected flight
+
+// Modal Logic
+const selectedFlight = ref(null) // добавляем реактивное состояние
+const isOpen = ref(false)
+const selectedConnection = ref(null)
+
+function openConnectionModal(connectionFlight: any) {
+  selectedConnection.value = connectionFlight
+  isOpen.value = true
+}
+
+function closeConnectionModal() {
+  isOpen.value = false
+  selectedConnection.value = null
+}
+</script>
+
+<template>
+  <UCard
+    class="w-full"
+    :ui="{
+      base: '',
+      ring: '',
+      divide: 'divide-y divide-gray-200 dark:divide-gray-700',
+      header: { padding: 'px-4 py-5' },
+      body: {
+        padding: '',
+        base: 'divide-y divide-gray-200 dark:divide-gray-700',
+      },
+      footer: { padding: 'p-4' },
+    }"
+  >
+    <template #header>
+      <h2
+        class="font-semibold text-xl text-gray-900 dark:text-white leading-tight text-left"
+      >
+        Freighters
+      </h2>
+    </template>
+
+    <!-- Table -->
+    <UTable
+      v-model="selectedRows"
+      v-model:sort="sort"
+      :rows="freighters"
+      :columns="columnsTable"
+      :loading="loading"
+      sort-asc-icon="i-heroicons-arrow-up"
+      sort-desc-icon="i-heroicons-arrow-down"
+      sort-mode="manual"
+      class="w-full"
+      :ui="{
+        td: { base: 'max-w-[0] truncate text-left px-4 py-2' },
+        th: { base: 'text-left px-4 py-2' },
+        default: { checkbox: { color: 'gray' } },
+      }"
+      @select="select"
+    >
+      <template #Airline_info-data="{ row }">
+        <div class="freighter-header">
+          <div class="freighter-logo">
+            <!-- Airline Logo (if available) -->
+            <img :src="row.airlines.logo" alt="Airline Logo" />
+          </div>
+          <div class="freighter-info">
+            <div class="flex flex-col">
+              <p class="font-black text-pink-500 text-xl">
+                {{ row.airlines.iata }}
+                <span class="font-bold font-mono text-gray-400 text-xl">{{
+                  row.flight_number
+                }}</span>
+              </p>
+              <span class="font-light text-gray-500 text-sm">{{
+                row.airlines.name
+              }}</span>
+              <p class="font-bold text-sm text-gray-400">
+                {{ row.aircrafts_register.ac_code }}
+                <span class="font-bold text-sm text-gray-400">{{
+                  row.aircrafts_register.ac_registration_number
+                }}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </template>
+      <template #Date-data="{ row }">
+        <div class="freighter-header flex flex-col text-left">
+          <p class="font-bold text-gray-600 text-md text-left">
+            PSD:
+            <span class="font-mono text-slate-400 text-left">{{
+              formatOnlyDate(row.flight_psd)
+            }}</span>
+          </p>
+          <p class="font-bold text-gray-600 text-md text-left">
+            PST:
+            <span class="font-mono text-slate-400 text-left">{{
+              row.flight_pst
+            }}</span>
+          </p>
+        </div>
+      </template>
+
+      <template #flight_route-data="{ row }">
+        <div class="freighter-header flex flex-col">
+          <!-- Check if the flight is inbound -->
+          <template v-if="row.flight_type === 'Inbound'">
+            <div class="uppercase">
+              <span class="font-bold text-xl text-left">{{
+                row.airports.iata
+              }}</span>
+              <span class="text-pink-600">→</span>
+              <span class="font-bold text-xl text-orange-600 text-left"
+                >SVO</span
+              >
+              <p class="font-normal text-slate-400 tracking-widest text-left">
+                {{ row.flight_type }}
+              </p>
+            </div>
+          </template>
+
+          <!-- If not inbound, consider it outbound -->
+          <template v-else>
+            <div class="text-left uppercase">
+              <span class="font-bold text-xl text-orange-600">SVO</span>
+              <span class="text-pink-600">→</span>
+              <span class="font-bold text-xl">{{ row.airports.iata }}</span>
+              <p class="font-normal text-slate-500 tracking-widest">
+                {{ row.flight_type }}
+              </p>
+            </div>
+          </template>
+          <div class="flex flex-col">
+            <span
+              class="text-xs text-tiny font-light uppercase tracking-widest text-sky-600"
+              >Connection</span
+            >
+            <p
+              class="mt-1 font-light uppercase text-xs text-gray-400 text-left"
+            >
+              <UButton
+                v-if="
+                  row.freight_schedules && row.freight_schedules.flight_number
+                "
+                size="xs"
+                variant="soft"
+                color="sky"
+                @click.stop="openConnectionModal(row.freight_schedules)"
+              >
+                {{ row.freight_schedules.airlines.iata
+                }}{{ row.freight_schedules.flight_number }}
+              </UButton>
+              <span v-else class="text-sm font-bold text-pink-400">NO</span>
+            </p>
+          </div>
+        </div>
+        <!-- Modal for Flight Details -->
+        <UModal v-model="isOpen">
+          <UCard
+            :ui="{
+              ring: '',
+              divide: 'divide-y divide-gray-100 dark:divide-gray-800',
+            }"
+          >
+            <template #header>
+              <div class="grid grid-cols-2 gap2">
+                <div class="freighter-header">
+                  <div class="freighter-logo">
+                    <!-- Airline Logo (if available) -->
+                    <img
+                      :src="row.freight_schedules.airlines.logo"
+                      alt="Airline Logo"
+                    />
+                  </div>
+                  <div class="freighter-info">
+                    <div class="flex flex-col">
+                      <p class="font-bold text-pink-500 text-xl">
+                        {{ row.freight_schedules.airlines.iata }}
+                        <span class="font-bold text-gray-400 text-xl">{{
+                          row.freight_schedules.flight_number
+                        }}</span>
+                      </p>
+                      <span class="font-light text-gray-500 text-sm">{{
+                        row.freight_schedules.airlines.name
+                      }}</span>
+                      <p class="font-bold text-sm text-gray-400">
+                        {{ row.freight_schedules.aircrafts_register.ac_code }}
+                        <span class="font-bold text-sm text-gray-400">{{
+                          row.aircrafts_register.ac_registration_number
+                        }}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="p-4">
+                  <div class="uppercase">
+                    <span class="font-bold text-xl text-left">{{
+                      row.freight_schedules.airports.iata
+                    }}</span>
+                    <span class="text-pink-600">→</span>
+                    <span class="font-bold text-xl text-orange-600 text-left"
+                      >SVO</span
+                    >
+                    <p
+                      class="font-normal text-slate-400 tracking-widest text-left"
+                    >
+                      {{ row.freight_schedules.flight_type }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </template>
+            <template #default>
+              <div class="grid grid-cols-2 gap-2">
+                <div class="freighter-header flex flex-col text-left">
+                  <h3 class="font-light text-xs text-slate-500">
+                    Planning time and date
+                  </h3>
+                  <p class="mt-2 font-bold text-gray-600 text-md text-left">
+                    PSD:
+                    <span class="font-mono text-slate-400 text-left">{{
+                      formatOnlyDate(row.freight_schedules.flight_psd)
+                    }}</span>
+                  </p>
+                  <p class="font-bold text-gray-600 text-md text-left">
+                    PST:
+                    <span class="font-mono text-slate-400 text-left">{{
+                      row.freight_schedules.flight_pst
+                    }}</span>
+                  </p>
+                </div>
+                <div class="freighter-header flex flex-col text-left">
+                  <h3 class="font-light text-xs text-slate-500">
+                    Scheduled time and date
+                  </h3>
+                  <p class="mt-2 font-bold text-gray-600 text-md text-left">
+                    PSD:
+                    <span class="font-mono text-red-400 text-left">{{
+                      formatOnlyDate(row.freight_schedules.flight_psd)
+                    }}</span>
+                  </p>
+                  <p class="font-bold text-gray-600 text-md text-left">
+                    PST:
+                    <span class="font-mono text-red-400 text-left">{{
+                      row.freight_schedules.flight_pst
+                    }}</span>
+                  </p>
+                </div>
+              </div>
+            </template>
+            <template #footer>
+              <UButton label="Close" @click="isOpen = false" />
+            </template>
+          </UCard>
+        </UModal>
+      </template>
+      <template #flight_handling_status-data="{ row }">
+        <UBadge
+          size="lg"
+          :label="row.flight_handling_status"
+          :color="getStatusColor(row.flight_handling_status)"
+          variant="subtle"
+        />
+      </template>
+
+      <template #actions-data="{ row }">
+        <UButton
+          v-if="row.flight_handling_status !== 'Completed'"
+          icon="i-heroicons-check"
+          size="2xs"
+          color="emerald"
+          variant="outline"
+          :ui="{ rounded: 'rounded-full' }"
+          square
+        />
+
+        <UButton
+          v-else
+          icon="i-heroicons-arrow-path"
+          size="2xs"
+          color="orange"
+          variant="outline"
+          :ui="{ rounded: 'rounded-full' }"
+          square
+        />
+      </template>
+    </UTable>
+
+    <!-- Number of rows & Pagination -->
+    <template #footer>
+      <div class="flex flex-wrap justify-between items-center">
+        <div>
+          <span class="text-sm leading-5">
+            Showing
+            <span class="font-medium">{{ pageFrom }}</span>
+            to
+            <span class="font-medium">{{ pageTo }}</span>
+            of
+            <span class="font-medium">{{ pageTotal }}</span>
+            results
+          </span>
+        </div>
+
+        <UPagination
+          v-model="page"
+          :page-count="pageCount"
+          :total="pageTotal"
+          :ui="{
+            wrapper: 'flex items-center gap-1',
+            rounded: '!rounded-full min-w-[32px] justify-center',
+            default: {
+              activeButton: {
+                variant: 'outline',
+              },
+            },
+          }"
+        />
+      </div>
+    </template>
+  </UCard>
+</template>
+
+<style scoped>
+.freighter-card {
+  background-color: #0f1d2c;
+  color: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  font-family: Arial, sans-serif;
+  max-width: 350px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.freighter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: left;
+  margin-bottom: 1rem;
+}
+
+.freighter-logo img {
+  max-width: 50px;
+}
+
+.freighter-info {
+  flex-grow: 1;
+  margin-left: 1rem;
+}
+
+.freighter-info .flight-number {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.freighter-info .flight-route {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 1.2rem;
+}
+
+.freighter-info .flight-type {
+  font-size: 0.9rem;
+  font-weight: normal;
+  color: #b0bec5;
+}
+
+.freighter-status {
+  color: #ff4081;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.freighter-body {
+  border-top: 1px solid #37474f;
+  padding-top: 1rem;
+}
+
+.freighter-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.freighter-details div span:first-child {
+  color: #b0bec5;
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+.freighter-details div span:last-child {
+  color: #ffffff;
+}
+
+.freighter-footer {
+  margin-top: 1rem;
+  color: #b0bec5;
+  font-size: 0.8rem;
+  text-align: right;
+}
+</style>

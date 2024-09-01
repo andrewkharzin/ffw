@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@heroicons/vue": "^2.1.4",
+    "@iconify/vue": "^4.1.2",
     "@nuxt-awesome/theme": "^2.0.12",
     "@nuxt/content": "^2.13.1",
     "@nuxt/icon": "^1.0.0",
@@ -25,6 +26,8 @@
     "@tanstack/vue-query": "^5.51.1",
     "@vuepic/vue-datepicker": "^8.8.1",
     "date-fns": "^3.6.0",
+    "date-fns-tz": "^3.1.3",
+    "dayjs": "^1.11.10",
     "nuxt": "^3.12.3",
     "nuxt-svgo": "^4.0.1",
     "primevue": "^4.0.0",
@@ -32,8 +35,7 @@
     "v-calendar": "^3.1.2",
     "vue": "latest",
     "vue3-toastify": "^0.2.2",
-    "zod": "^3.23.8",
-    "dayjs": "^1.11.10"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@iconify-json/heroicons-outline": "^1.1.10",

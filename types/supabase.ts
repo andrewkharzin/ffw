@@ -9,6 +9,44 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      air_manuals: {
+        Row: {
+          airline_id: string
+          category:
+            | Database["public"]["Enums"]["airline document category"]
+            | null
+          document_url: string | null
+          id: string
+          title: string | null
+        }
+        Insert: {
+          airline_id: string
+          category?:
+            | Database["public"]["Enums"]["airline document category"]
+            | null
+          document_url?: string | null
+          id?: string
+          title?: string | null
+        }
+        Update: {
+          airline_id?: string
+          category?:
+            | Database["public"]["Enums"]["airline document category"]
+            | null
+          document_url?: string | null
+          id?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "air_manuals_airline_id_fkey"
+            columns: ["airline_id"]
+            isOneToOne: false
+            referencedRelation: "airlines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aircrafts_register: {
         Row: {
           ac_airline_iata: string | null
@@ -422,27 +460,43 @@ export type Database = {
       }
       flights: {
         Row: {
+          aircraft_reg_id: string | null
           airline_id: string | null
           departure_airport: string
           destination_airport: string
           flight_number: string
           id: string
+          SPD: string | null
+          SPT: string | null
         }
         Insert: {
+          aircraft_reg_id?: string | null
           airline_id?: string | null
           departure_airport: string
           destination_airport: string
           flight_number: string
           id?: string
+          SPD?: string | null
+          SPT?: string | null
         }
         Update: {
+          aircraft_reg_id?: string | null
           airline_id?: string | null
           departure_airport?: string
           destination_airport?: string
           flight_number?: string
           id?: string
+          SPD?: string | null
+          SPT?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "flights_aircraft_reg_id_fkey"
+            columns: ["aircraft_reg_id"]
+            isOneToOne: false
+            referencedRelation: "aircrafts_register"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "flights_airline_id_fkey"
             columns: ["airline_id"]
@@ -527,6 +581,7 @@ export type Database = {
         Row: {
           ac_register: string | null
           airline: string | null
+          connection_id: string | null
           created_at: string
           description: string | null
           flight_estgt: string | null
@@ -545,6 +600,7 @@ export type Database = {
         Insert: {
           ac_register?: string | null
           airline?: string | null
+          connection_id?: string | null
           created_at?: string
           description?: string | null
           flight_estgt?: string | null
@@ -563,6 +619,7 @@ export type Database = {
         Update: {
           ac_register?: string | null
           airline?: string | null
+          connection_id?: string | null
           created_at?: string
           description?: string | null
           flight_estgt?: string | null
@@ -579,6 +636,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "freight_schedules_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "freight_schedules"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "public_freight_schedules_ac_register_fkey"
             columns: ["ac_register"]
@@ -1166,6 +1230,17 @@ export type Database = {
       }
     }
     Enums: {
+      "airline document category":
+        | "GOPM"
+        | "GOCHM"
+        | "GOSQM"
+        | "SLM"
+        | "РОНО"
+        | "AHM"
+        | "GOM"
+        | "TELEXES"
+        | "ULD"
+        | "COMMON"
       airline_handling: "scheduled" | "charter"
       "book status": "KK" | "CC" | "NR"
       book_type: "TRANSFER" | "ONE_LEG"
