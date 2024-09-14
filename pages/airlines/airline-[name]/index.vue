@@ -83,7 +83,7 @@ console.log('Parent component loaded, airlineId:', airline?.id)
             </p>
           </div>
           <div class="ml-auto">
-            <AirlinesNotificationBar :airlineId="airline?.id" />
+            <AirlinesNotificationBar :airline-id="airline?.id" />
           </div>
         </div>
       </div>
@@ -102,11 +102,11 @@ console.log('Parent component loaded, airlineId:', airline?.id)
         </div>
         <div class="mt-5 w-full">
           <!-- <AirlinesDetailsCardAircrafts :airline="airline" /> -->
-          <AirlinesDetailsCardAircratfs :airlineId="airline?.id" />
+          <AirlinesDetailsCardAircratfs :airline-id="airline?.id" />
         </div>
         <!-- Add the new AirlineRampCheckActivity component -->
         <div class="mt-5 w-full">
-          <AirlinesDetailsCardRampActivity :airlineId="airline?.id" />
+          <AirlinesDetailsCardRampActivity :airline-id="airline?.id" />
         </div>
       </div>
     </LayoutsPageSection>

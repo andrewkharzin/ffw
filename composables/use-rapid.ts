@@ -44,7 +44,9 @@ export function useRapid() {
         flightsData.value.departures = result.departures || []
 
         // Update the total number of flights
-        pageTotal.value = flightsData.value.arrivals.length + flightsData.value.departures.length
+        pageTotal.value =
+          flightsData.value.arrivals.length +
+          flightsData.value.departures.length
 
         console.log('Flights data (arrivals):', flightsData.value.arrivals)
         console.log('Flights data (departures):', flightsData.value.departures)
@@ -89,7 +91,8 @@ export function useRapid() {
       // Note: Handle any JSON parsing if necessary
     } catch (err) {
       console.error('Error fetching flight info:', err)
-      error.value = 'Failed to fetch flight information. Please try again later.'
+      error.value =
+        'Failed to fetch flight information. Please try again later.'
     } finally {
       loading.value = false
     }

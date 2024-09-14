@@ -25,7 +25,7 @@
       <div v-else class="p-4 dark:bg-slate-800 dark:text-white">Loading...</div>
       <!-- <UTabs :items="items" :default-index="2" /> -->
       <div class="mt-5">
-        <UiCustomTabs :items="items" :defaultIndex="2" />
+        <UiCustomTabs :items="items" :default-index="2" />
       </div>
     </LayoutsPageSection>
   </LayoutsPageWrapper>
@@ -35,7 +35,7 @@
 import { onMounted, defineAsyncComponent } from 'vue'
 
 const ManualComponent = defineAsyncComponent(
-  () => import('@/components/airlines/aircraft/tabs/manual.vue')
+  () => import('@/components/airlines/aircraft/tabs/manual.vue'),
 )
 
 const items = [

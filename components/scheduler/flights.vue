@@ -397,6 +397,8 @@ const getStatusClass = (status: string) => {
       return 'bg-pink-500'
     case 'EnRoute':
       return 'bg-green-800'
+    case 'CheckIn':
+      return 'bg-sky-600'
     case 'Arrived':
       return 'bg-slate-300 uppercase font-bold flex items-center space-x-1'
     default:

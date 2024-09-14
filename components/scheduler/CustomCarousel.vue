@@ -10,9 +10,9 @@
         class="carousel-item flex-shrink-0 w-full text-center"
       >
         <div
-          class="w-25 border-2 border-pink-500 text-pink-500 rounded-tr-lg rounded-bl-lg p-2"
+          class="w-18 border-2 border-pink-500 text-pink-500 bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent rounded-tr-lg rounded-bl-lg p-2"
         >
-          <h2 class="text-3xl font-bold dark:text-gray-300">{{ item }}</h2>
+          <h2 class="text-xs font-bold dark:text-gray-300">{{ item }}</h2>
         </div>
       </div>
     </div>

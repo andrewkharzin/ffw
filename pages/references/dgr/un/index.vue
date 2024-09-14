@@ -124,7 +124,7 @@ const nextPage = () => {
 }
 
 const totalPages = computed(() =>
-  Math.ceil(totalItems.value / itemsPerPage.value)
+  Math.ceil(totalItems.value / itemsPerPage.value),
 )
 </script>
 

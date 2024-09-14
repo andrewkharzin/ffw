@@ -1,13 +1,21 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
-import { formatOnlyDate, formatOnlyTime } from '@/configs/date_util'
 import { Icon } from '@iconify/vue'
+import { formatOnlyDate, formatOnlyTime } from '@/configs/date_util'
+import Plane from '~/assets/images/plane_sch.svg'
+import { generateFFMPdf } from '@/utils/generators/manifestv2'
+
+// Define the message types you want to chec
+const messageTypes = ['FFM', 'CPM', 'LDM', 'FWB'] as const
+type MessageType = (typeof messageTypes)[number]
+
 // Props
 const props = defineProps<{
   freighters: any[]
   loading: boolean
+  flt_messages: { message_type: MessageType }[]
 }>()
-
+generateFFMPdf()
 // Columns
 const columns = [
   {
@@ -36,16 +44,21 @@ const columns = [
     label: 'Route',
     sortable: true,
   },
-  {
-    key: 'flight_handling_status',
-    label: 'Status',
-    sortable: true,
-  },
   // {
-  //   key: 'actions',
-  //   label: 'Actions',
-  //   sortable: false,
+  //   key: 'flight_handling_status',
+  //   label: 'Status',
+  //   sortable: true,
   // },
+  {
+    key: 'payload',
+    label: 'Payload',
+    sortable: false,
+  },
+  {
+    key: 'actions',
+    label: 'Actions',
+    sortable: false,
+  },
 ]
 
 const selectedColumns = ref(columns)
@@ -55,6 +68,24 @@ const columnsTable = computed(() =>
 
 // Selected Rows
 const selectedRows = ref([])
+
+// Actions
+const actions = [
+  [
+    {
+      key: 'manifest',
+      label: 'Manifest',
+      icon: 'i-heroicons-check',
+    },
+  ],
+  [
+    {
+      key: 'uncompleted',
+      label: 'In Progress',
+      icon: 'i-heroicons-arrow-path',
+    },
+  ],
+]
 
 function select(row) {
   const index = selectedRows.value.findIndex((item) => item.id === row.id)
@@ -107,6 +138,14 @@ function closeConnectionModal() {
   isOpen.value = false
   selectedConnection.value = null
 }
+
+// Function to check if a message type exists for a freighter
+function hasMessageType(
+  row: (typeof props.freighters)[0],
+  type: MessageType
+): boolean {
+  return row.flt_messages.some((msg) => msg.message_type === type)
+}
 </script>
 
 <template>
@@ -130,6 +169,12 @@ function closeConnectionModal() {
       >
         Freighters
       </h2>
+      <UButton
+        v-if="selectedRows.length > 0"
+        @click="generateFFMPdf(selectedRows[0].parsedFFM)"
+      >
+        Download FFM Report
+      </UButton>
     </template>
 
     <!-- Table -->
@@ -160,18 +205,25 @@ function closeConnectionModal() {
             <div class="flex flex-col">
               <p class="font-black text-pink-500 text-xl">
                 {{ row.airlines.iata }}
-                <span class="font-bold font-mono text-gray-400 text-xl">{{
-                  row.flight_number
-                }}</span>
+                <span class="font-bold font-mono text-gray-400 text-xl">
+                  <NuxtLink :to="`/flights/freighter/${row.id}`">
+                    {{ row.flight_number }}
+                  </NuxtLink>
+                </span>
               </p>
               <span class="font-light text-gray-500 text-sm">{{
                 row.airlines.name
               }}</span>
               <p class="font-bold text-sm text-gray-400">
+                <Plane
+                  class="w-[130px] text-pink-600"
+                  :font-controlled="false"
+                />
+
                 {{ row.aircrafts_register.ac_code }}
-                <span class="font-bold text-sm text-gray-400">{{
-                  row.aircrafts_register.ac_registration_number
-                }}</span>
+                <span class="font-normal text-sm text-gray-400 font-mono"
+                  >REG:{{ row.aircrafts_register.ac_registration_number }}</span
+                >
               </p>
             </div>
           </div>
@@ -179,18 +231,48 @@ function closeConnectionModal() {
       </template>
       <template #Date-data="{ row }">
         <div class="freighter-header flex flex-col text-left">
-          <p class="font-bold text-gray-600 text-md text-left">
-            PSD:
-            <span class="font-mono text-slate-400 text-left">{{
-              formatOnlyDate(row.flight_psd)
-            }}</span>
-          </p>
-          <p class="font-bold text-gray-600 text-md text-left">
-            PST:
-            <span class="font-mono text-slate-400 text-left">{{
-              row.flight_pst
-            }}</span>
-          </p>
+          <div>
+            <span
+              class="text-[0.6rem] text-tiny uppercase tracking-widest dark:text-gray-500"
+              >Planning</span
+            >
+            <p class="font-bold text-gray-600 text-md text-left">
+              PSD:
+              <span class="font-mono text-slate-400 text-left">{{
+                formatOnlyDate(row.flight_psd)
+              }}</span>
+            </p>
+            <p class="font-bold text-gray-600 text-md text-left">
+              PST:
+              <span class="font-mono text-slate-400 text-left">{{
+                row.flight_pst
+              }}</span>
+            </p>
+          </div>
+          <div>
+            <span
+              class="text-[0.6rem] text-tiny uppercase tracking-widest dark:text-sky-500"
+              >Scheduled</span
+            >
+            <div class="flex flex-row">
+              <Icon icon="icon-park-outline:schedule" />
+              <p class="ml-1 font-bold text-pink-600 text-xs text-left">
+                ETA:
+                <span class="font-mono text-slate-400 text-left">
+                  14:55 29/08/24
+                </span>
+              </p>
+            </div>
+            <div class="flex flex-row">
+              <Icon icon="mdi:airplane-schedule" />
+              <p class="ml-1 font-bold text-pink-600 text-xs text-left">
+                ATA:
+                <span class="font-mono text-slate-400 text-left">
+                  15:01 29/08/24
+                </span>
+              </p>
+            </div>
+          </div>
         </div>
       </template>
 
@@ -347,7 +429,7 @@ function closeConnectionModal() {
           </UCard>
         </UModal>
       </template>
-      <template #flight_handling_status-data="{ row }">
+      <template #flight_handling_status-data="{ row }" class="w-1/4">
         <UBadge
           size="lg"
           :label="row.flight_handling_status"
@@ -376,6 +458,67 @@ function closeConnectionModal() {
           :ui="{ rounded: 'rounded-full' }"
           square
         />
+      </template>
+      <template #payload-data="{ row }">
+        <div class="flex flex-col">
+          <!-- Link to manifest generator -->
+
+          <p
+            class="text-[0.6rem] text-tiny dark:text-sky-600 tracking-widest ml-2"
+          >
+            TELEXES
+          </p>
+          <div class="flex flex-row p-2">
+            <UCheckbox disabled label="FFM" :model-value="row.hasFFM" />
+            <UCheckbox
+              disabled
+              label="CPM"
+              :model-value="row.hasCPM"
+              class="ml-2"
+            />
+          </div>
+          <div class="flex flex-row p-2">
+            <UCheckbox disabled label="LDM" :model-value="row.hasLDM" />
+            <UCheckbox
+              disabled
+              label="FWB"
+              :model-value="row.hasFWB"
+              class="ml-2"
+            />
+          </div>
+          <div v-if="row.hasFFM && row.parsedFFM">
+            <div class="flex flex-row">
+              <div class="">
+                <p class="ml-2 font-bold font-mono">
+                  ULD
+                  <span class="text-xs text-red-500">{{
+                    row.parsedFFM.totalUlds
+                  }}</span>
+                </p>
+              </div>
+              <div>
+                <p class="ml-1 font-bold font-mono">
+                  Pcs
+                  <span class="text-xs text-red-500">{{
+                    row.parsedFFM.totalPieces
+                  }}</span>
+                </p>
+              </div>
+              <div>
+                <p class="ml-1 font-bold font-mono">
+                  Kgs
+                  <span class="text-xs text-red-500">{{
+                    row.parsedFFM.totalWeight
+                  }}</span>
+                </p>
+              </div>
+              <div>
+                <p class="ml-1 font-bold font-mono"></p>
+              </div>
+            </div>
+          </div>
+          <div v-else class="ml-2 border w-15 rounded-lg p-1">NIL</div>
+        </div>
       </template>
     </UTable>
 

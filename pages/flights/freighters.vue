@@ -1,42 +1,18 @@
 <template>
   <LayoutsPageWrapper>
     <LayoutsPageSection>
-      <!-- Button for display modal window -->
-      <div class="mb-4">
-        <UButton
-          color="emerald"
-          variant="solid"
-          @click="isOpen = true"
-          size="sm"
-        >
-          Test SCR Parser
-        </UButton>
-      </div>
-      <!-- Flight type switcher -->
-      <div class="flex justify-between mb-4">
-        <div>
-          <UButton
-            :color="selectedFlightType === 'Inbound' ? 'sky' : 'gray'"
-            variant="solid"
-            @click="selectFlightType('Inbound')"
-            size="sm"
-          >
-            Inbound
-          </UButton>
-          <UButton
-            :color="selectedFlightType === 'Outbound' ? 'sky' : 'gray'"
-            variant="solid"
-            class="ml-2"
-            @click="selectFlightType('Outbound')"
-            size="sm"
-          >
-            Outbound
-          </UButton>
-        </div>
-      </div>
-
+      <!-- <SchedulerUiToolsbar /> -->
+      <!-- Scheduler Toolbar -->
+      <SchedulerUiToolsbar
+        :selectedFlightType="selectedFlightType"
+        @openParserModal="isOpen = true"
+        @selectFlightType="selectFlightType"
+        @testFFMParser="testFFMParser"
+      />
       <!-- Freighters Table -->
-      <SchedulerFreightersTable :freighters="freighters" :loading="loading" />
+      <div class="mt-4">
+        <SchedulerFreightersTable :freighters="freighters" :loading="loading" />
+      </div>
       <!-- Modal for SCR Parser -->
       <UModal v-model="isOpen">
         <UCard
@@ -62,16 +38,18 @@
           </div>
 
           <template #footer>
-            <UButton @click="isOpen = false" color="gray" variant="solid">
+            <UButton color="gray" variant="solid" @click="isOpen = false">
               Close
             </UButton>
           </template>
         </UCard>
       </UModal>
+
       <!-- Modal to Display Parsed Results -->
       <SchedulerFormsParsedResultsModal
-        :parsedResults="parsedResults"
         :isOpen="isResultsModalOpen"
+        :parsedResults="parsedResults"
+        @update:isOpen="isResultsModalOpen = $event"
       />
     </LayoutsPageSection>
   </LayoutsPageWrapper>
@@ -80,6 +58,8 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { parseSCRMessage } from '@/utils/SCR'
+// import { parseSCRMessagev2 } from '@/utils/parsers/SCRV2'
+import { parseFFM } from '@/utils/parsers/FFM'
 
 // Compiler micro
 definePageMeta({ layout: 'page' })
@@ -93,25 +73,40 @@ function selectFlightType(type: 'Inbound' | 'Outbound') {
   selectedFlightType.value = type
 }
 
-// Modal visibility state
-const isOpen = ref(false)
-const isResultsModalOpen = ref(false)
-const parsedResults = ref('')
+// Modal visibility states
+const isOpen = ref(false) // Controls the SCR parser modal
+const isResultsModalOpen = ref(false) // Controls the parsed results modal
+const parsedResults = ref('') // Stores the parsed results
 
 // State management for SCR message input
 const scrTelex = ref('')
 
-// Test SCR Parser
+// Test SCR Parser and show parsed results in a modal
 function testSCRParser() {
   try {
     const parsedData = parseSCRMessage(scrTelex.value)
-    console.log('Parsed SCR Message:', parsedData)
-    alert('Parsed data logged to console.') // Optional: Display an alert
+    parsedResults.value = parsedData // Store parsed results
+    isOpen.value = false // Close the parser modal
+    isResultsModalOpen.value = true // Open the results modal
   } catch (error) {
     console.error('Failed to parse SCR message:', error)
     alert('Failed to parse SCR message. Please check the format.')
   }
 }
+
+// Test FFM Parser and show results in a modal or console
+// function testFFMParser() {
+
+//   try {
+//     const parsedData = parseFFM(message)
+//     console.log(parsedData) // Output parsed data to console or store it for display
+//     parsedResults.value = parsedData // Store parsed results
+//     isResultsModalOpen.value = true // Open the results modal to display
+//   } catch (error) {
+//     console.error('Failed to parse FFM message:', error)
+//     alert('Failed to parse FFM message. Please check the format.')
+//   }
+// }
 
 onMounted(() => {
   fetchFreighters()

@@ -13,35 +13,35 @@ export function useRamp() {
   const rampChecks = ref([])
 
   const fetchRampChecksByAirline = async (airlineId) => {
-    loading.value = true;
+    loading.value = true
     try {
       const { data, error } = await supabase
         .from('ramp_check')
-        .select(`
+        .select(
+          `
           id,
           created_at,
           data,
           status,
           user_id,
           inbound_flight: flights!ramp_check_inbound_flight_id_fkey(flight_number, departure_airport, destination_airport, airline_id)
-        `)
+        `,
+        )
         .eq('inbound_flight.airline_id', airlineId) // Ensure filtering by airlineId
-        .not('inbound_flight', 'is', null); // Ensure that inbound_flight is not null
+        .not('inbound_flight', 'is', null) // Ensure that inbound_flight is not null
 
       if (error) {
-        console.error('Error fetching ramp checks:', error.message);
+        console.error('Error fetching ramp checks:', error.message)
       } else if (data) {
-        console.log('Fetched ramp checks:', data);
-        rampChecks.value = data;
+        console.log('Fetched ramp checks:', data)
+        rampChecks.value = data
       }
     } catch (error) {
-      console.error('Unexpected error fetching ramp checks:', error.message);
+      console.error('Unexpected error fetching ramp checks:', error.message)
     } finally {
-      loading.value = false;
+      loading.value = false
     }
   }
-
-
 
   const fetchData = async (userId: string) => {
     try {

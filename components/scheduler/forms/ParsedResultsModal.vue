@@ -1,6 +1,7 @@
 <template>
-  <UModal v-model="isOpen">
+  <UModal :model-value="localIsOpen" @update:model-value="updateIsOpen">
     <UCard
+      class="max-w-full"
       :ui="{
         ring: '',
         divide: 'divide-y divide-gray-100 dark:divide-gray-800',
@@ -11,35 +12,86 @@
       </template>
 
       <div class="p-4">
-        <pre class="whitespace-pre-wrap">{{ parsedResults }}</pre>
+        <!-- Display table using UTable -->
+        <UTable
+          v-if="formattedFlights.length"
+          :columns="columns"
+          :rows="formattedFlights"
+        />
+        <p v-else>No flight results to display</p>
+        <!-- Fallback when there are no flights -->
       </div>
 
       <template #footer>
-        <UButton @click="closeModal" color="gray" variant="solid">
-          Close
-        </UButton>
+        <UButton color="gray" variant="solid" @click="closeModal"
+          >Close</UButton
+        >
       </template>
     </UCard>
   </UModal>
 </template>
 
-<script setup lang="ts">
-import { ref, defineProps } from 'vue'
+<script lang="ts" setup>
+import { ref, watch, computed } from 'vue'
 
-// Define props to receive parsed results and modal state
-const props = defineProps({
+// Props
+const props = defineProps<{
+  isOpen: boolean
   parsedResults: {
-    type: String,
-    required: true,
-  },
-  isOpen: {
-    type: Boolean,
-    required: true,
-  },
-})
+    flights: Array<Record<string, any>>
+    airportCode: string
+    scheduleDate: string
+    // Add other properties if needed
+  }
+}>()
+const emit = defineEmits(['update:isOpen'])
 
-// Emit event to close the modal
-const closeModal = () => {
-  props.isOpen = false
+const localIsOpen = ref(props.isOpen)
+
+watch(
+  () => props.isOpen,
+  (newValue) => {
+    localIsOpen.value = newValue
+  }
+)
+
+const updateIsOpen = (value: boolean) => {
+  emit('update:isOpen', value)
 }
+
+function closeModal() {
+  updateIsOpen(false)
+}
+
+// Define columns for UTable
+const columns = [
+  { key: 'flightNumber', label: 'Flight' },
+  { key: 'startDate', label: 'Date1' },
+  { key: 'endDate', label: 'Date2' },
+  { key: 'timing', label: 'Day' },
+  { key: 'aircraftType', label: 'AC Type' },
+  { key: 'route', label: 'Route' },
+  { key: 'utcTime', label: 'Time/UTC' },
+  { key: 'serviceInfo', label: 'Service Info' },
+  { key: 'flightType', label: 'Type' },
+]
+
+// Extract and format the flights array for the UTable
+const formattedFlights = computed(() => {
+  if (Array.isArray(props.parsedResults.flights)) {
+    return props.parsedResults.flights.map((flight) => ({
+      flightNumber: flight.flightNumber || 'N/A',
+      startDate: flight.startDate || 'N/A',
+      endDate: flight.endDate || 'N/A',
+      timing: flight.timing || 'N/A',
+      aircraftType: flight.aircraftType || 'N/A',
+      route: flight.route || 'N/A',
+      utcTime: flight.utcTime || 'N/A',
+      serviceInfo: flight.serviceInfo || 'N/A',
+      flightType: flight.flightType || 'N/A',
+    }))
+  } else {
+    return []
+  }
+})
 </script>
