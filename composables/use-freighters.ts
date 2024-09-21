@@ -113,6 +113,31 @@ export function useFreighters() {
       loading.value = false
     }
   }
+  // Function to add a new freighter flight
+  const addFreighterFlight = async (newFreighterData: Partial<FreightSchedule>) => {
+    loading.value = true
+    error.value = null
+
+    const supabase = useSupabaseClient()
+
+    try {
+      const { data, error: insertError } = await supabase
+        .from('freight_schedules')
+        .insert([newFreighterData])
+
+      if (insertError) {
+        throw new Error(insertError.message)
+      }
+
+      // Refresh the freighter list after adding
+      await fetchFreighters()
+    } catch (err) {
+      console.error('Failed to add freighter flight:', err)
+      error.value = 'Failed to add freighter flight. Please try again later.'
+    } finally {
+      loading.value = false
+    }
+  }
 
   watch(selectedFlightType, fetchFreighters)
 
@@ -122,5 +147,6 @@ export function useFreighters() {
     error,
     fetchFreighters,
     selectedFlightType,
+    addFreighterFlight,
   }
 }

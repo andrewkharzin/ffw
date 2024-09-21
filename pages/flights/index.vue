@@ -7,7 +7,7 @@ useHead({ title: 'Flights' })
 // Use color mode
 const colorMode = useColorMode()
 // Dynamically set background image using TypeScript
-const backgroundImage = '/assets/images/covers/cargo_fplane.jpg'
+const backgroundImage = '~/assets/images/covers/cargo_fplane.jpg'
 
 // Computed style object
 const backgroundStyle = computed(() => ({
@@ -128,9 +128,9 @@ const carouselItems = computed(() => {
             :style="backgroundStyle"
           >
             <!-- Gradient Overlay -->
-            <div
+            <!-- <div
               class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black opacity-50"
-            ></div>
+            ></div> -->
           </div>
 
           <!-- Content Header -->

@@ -12,7 +12,6 @@
       >
         VDA|SCR
       </UButton>
-      <!-- Button for test FFM Parser here -->
       <!-- Button for test FFM Parser -->
       <UButton
         color="emerald"
@@ -21,6 +20,15 @@
         @click="$emit('testFFMParser')"
       >
         Test FFM Parser
+      </UButton>
+      <!-- Button for adding a new flight -->
+      <UButton
+        color="amber"
+        variant="soft"
+        size="sm"
+        @click="$emit('addFlight')"
+      >
+        Add Flight
       </UButton>
     </div>
     <div class="flex space-x-4">
@@ -58,5 +66,6 @@ const emit = defineEmits([
   'openParserModal',
   'selectFlightType',
   'testFFMParser',
+  'addFlight', // Emit an event when the 'Add Flight' button is clicked
 ])
 </script>

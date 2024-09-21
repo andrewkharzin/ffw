@@ -68,7 +68,6 @@ const columnsTable = computed(() =>
 
 // Selected Rows
 const selectedRows = ref([])
-
 // Actions
 const actions = [
   [
@@ -146,6 +145,14 @@ function hasMessageType(
 ): boolean {
   return row.flt_messages.some((msg) => msg.message_type === type)
 }
+
+// Correct usage of useState with a string key
+const showBlock = useState('showBlock', () => true)
+
+// Function to toggle the block visibility
+const toggleBlockVisibility = (value: boolean) => {
+  showBlock.value = value
+}
 </script>
 
 <template>
@@ -164,11 +171,25 @@ function hasMessageType(
     }"
   >
     <template #header>
-      <h2
-        class="font-semibold text-xl text-gray-900 dark:text-white leading-tight text-left"
-      >
-        Freighters
-      </h2>
+      <div class="flex flex-row">
+        <h2
+          class="font-semibold text-xl text-gray-900 dark:text-white leading-tight text-left"
+        >
+          Freighters
+        </h2>
+        <!-- UToggle component with two-way binding for the toggle state -->
+      </div>
+      <div class="flex flex-row-reverse">
+        <div>
+          <span> Advanced View </span>
+          <UToggle
+            class=""
+            color="primary"
+            :model-value="showBlock"
+            @update:model-value="toggleBlockVisibility"
+          />
+        </div>
+      </div>
       <UButton
         v-if="selectedRows.length > 0"
         @click="generateFFMPdf(selectedRows[0].parsedFFM)"
@@ -214,17 +235,21 @@ function hasMessageType(
               <span class="font-light text-gray-500 text-sm">{{
                 row.airlines.name
               }}</span>
-              <p class="font-bold text-sm text-gray-400">
-                <Plane
-                  class="w-[130px] text-pink-600"
-                  :font-controlled="false"
-                />
+              <div v-if="showBlock">
+                <p class="font-bold text-sm text-gray-400">
+                  <Plane
+                    class="w-[130px] text-pink-600"
+                    :font-controlled="false"
+                  />
 
-                {{ row.aircrafts_register.ac_code }}
-                <span class="font-normal text-sm text-gray-400 font-mono"
-                  >REG:{{ row.aircrafts_register.ac_registration_number }}</span
-                >
-              </p>
+                  {{ row.aircrafts_register.ac_code }}
+                  <span class="font-normal text-sm text-gray-400 font-mono"
+                    >REG:{{
+                      row.aircrafts_register.ac_registration_number
+                    }}</span
+                  >
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -249,25 +274,26 @@ function hasMessageType(
               }}</span>
             </p>
           </div>
-          <div>
+          <div v-if="showBlock">
             <span
-              class="text-[0.6rem] text-tiny uppercase tracking-widest dark:text-sky-500"
-              >Scheduled</span
+              className="text-[0.6rem] text-tiny uppercase tracking-widest dark:text-sky-500"
             >
-            <div class="flex flex-row">
+              Scheduled
+            </span>
+            <div className="flex flex-row">
               <Icon icon="icon-park-outline:schedule" />
-              <p class="ml-1 font-bold text-pink-600 text-xs text-left">
+              <p className="ml-1 font-bold text-pink-600 text-xs text-left">
                 ETA:
-                <span class="font-mono text-slate-400 text-left">
+                <span className="font-mono text-slate-400 text-left">
                   14:55 29/08/24
                 </span>
               </p>
             </div>
-            <div class="flex flex-row">
+            <div className="flex flex-row">
               <Icon icon="mdi:airplane-schedule" />
-              <p class="ml-1 font-bold text-pink-600 text-xs text-left">
+              <p className="ml-1 font-bold text-pink-600 text-xs text-left">
                 ATA:
-                <span class="font-mono text-slate-400 text-left">
+                <span className="font-mono text-slate-400 text-left">
                   15:01 29/08/24
                 </span>
               </p>
@@ -288,9 +314,11 @@ function hasMessageType(
               <span class="font-bold text-xl text-orange-600 text-left"
                 >SVO</span
               >
-              <p class="font-normal text-slate-400 tracking-widest text-left">
-                {{ row.flight_type }}
-              </p>
+              <div v-if="showBlock">
+                <p class="font-normal text-slate-400 tracking-widest text-left">
+                  {{ row.flight_type }}
+                </p>
+              </div>
             </div>
           </template>
 
@@ -300,12 +328,14 @@ function hasMessageType(
               <span class="font-bold text-xl text-orange-600">SVO</span>
               <span class="text-pink-600">→</span>
               <span class="font-bold text-xl">{{ row.airports.iata }}</span>
-              <p class="font-normal text-slate-500 tracking-widest">
-                {{ row.flight_type }}
-              </p>
+              <div v-if="showBlock">
+                <p class="font-normal text-slate-500 tracking-widest">
+                  {{ row.flight_type }}
+                </p>
+              </div>
             </div>
           </template>
-          <div class="flex flex-col">
+          <div class="flex flex-col" v-if="showBlock">
             <span
               class="text-xs text-tiny font-light uppercase tracking-widest text-sky-600"
               >Connection</span
@@ -462,12 +492,6 @@ function hasMessageType(
       <template #payload-data="{ row }">
         <div class="flex flex-col">
           <!-- Link to manifest generator -->
-
-          <p
-            class="text-[0.6rem] text-tiny dark:text-sky-600 tracking-widest ml-2"
-          >
-            TELEXES
-          </p>
           <div class="flex flex-row p-2">
             <UCheckbox disabled label="FFM" :model-value="row.hasFFM" />
             <UCheckbox
@@ -477,7 +501,7 @@ function hasMessageType(
               class="ml-2"
             />
           </div>
-          <div class="flex flex-row p-2">
+          <div class="flex flex-row p-2" v-if="showBlock">
             <UCheckbox disabled label="LDM" :model-value="row.hasLDM" />
             <UCheckbox
               disabled
@@ -487,7 +511,7 @@ function hasMessageType(
             />
           </div>
           <div v-if="row.hasFFM && row.parsedFFM">
-            <div class="flex flex-row">
+            <div class="flex flex-row" v-if="showBlock">
               <div class="">
                 <p class="ml-2 font-bold font-mono">
                   ULD
@@ -517,7 +541,6 @@ function hasMessageType(
               </div>
             </div>
           </div>
-          <div v-else class="ml-2 border w-15 rounded-lg p-1">NIL</div>
         </div>
       </template>
     </UTable>

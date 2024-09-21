@@ -8,6 +8,7 @@
         @openParserModal="isOpen = true"
         @selectFlightType="selectFlightType"
         @testFFMParser="testFFMParser"
+        @addFlight="navigateToAddFlight"
       />
       <!-- Freighters Table -->
       <div class="mt-4">
@@ -111,4 +112,10 @@ function testSCRParser() {
 onMounted(() => {
   fetchFreighters()
 })
+
+const router = useRouter()
+
+function navigateToAddFlight() {
+  router.push('/flights/freighter/add')
+}
 </script>
