@@ -1,33 +1,28 @@
 <template>
   <header
-    class="mx-4 bg-gray-200 dark:bg-slate-900 p-4 flex justify-between items-center rounded-md"
+    class="bg-gray-200 dark:bg-gray-900 p-4 flex justify-between items-center rounded-md"
   >
     <div class="flex space-x-4">
       <!-- Button for display modal window -->
-      <UButton
+      <!-- <UButton
         color="sky"
         variant="soft"
         size="sm"
         @click="$emit('openParserModal')"
       >
         VDA|SCR
-      </UButton>
+      </UButton> -->
       <!-- Button for test FFM Parser -->
-      <UButton
+      <!-- <UButton
         color="emerald"
         variant="soft"
         size="sm"
         @click="$emit('testFFMParser')"
       >
         Test FFM Parser
-      </UButton>
+      </UButton> -->
       <!-- Button for adding a new flight -->
-      <UButton
-        color="amber"
-        variant="soft"
-        size="sm"
-        @click="$emit('addFlight')"
-      >
+      <UButton color="sky" variant="soft" size="sm" @click="$emit('addFlight')">
         Add Flight
       </UButton>
     </div>

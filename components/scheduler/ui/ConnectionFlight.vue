@@ -35,7 +35,6 @@
                 <th class="text-sm font-medium dark:text-gray-300">
                   Flight Number
                 </th>
-                <th class="text-sm font-medium dark:text-gray-300">Airline</th>
                 <th class="text-sm font-medium dark:text-gray-300">Route</th>
                 <th class="text-sm font-medium dark:text-gray-300">Action</th>
               </tr>
@@ -74,9 +73,6 @@
                   </div>
                   <!-- {{ flight.flight_number }}
                   {{ flight.airlines?.iata || 'N/A' }} -->
-                </td>
-                <td class="">
-                  {{ flight.airlines?.name || 'N/A' }}
                 </td>
                 <td class="">
                   <template v-if="flight.flight_type === 'Inbound'">

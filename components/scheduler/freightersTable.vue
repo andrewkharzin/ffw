@@ -9,6 +9,9 @@ import { generateFFMPdf } from '@/utils/generators/manifestv2'
 const messageTypes = ['FFM', 'CPM', 'LDM', 'FWB'] as const
 type MessageType = (typeof messageTypes)[number]
 
+// Define a reactive variable for detecting small screens (iPhones)
+const isSmallScreen = ref(false)
+
 // Props
 const props = defineProps<{
   freighters: any[]
@@ -62,8 +65,21 @@ const columns = [
 ]
 
 const selectedColumns = ref(columns)
-const columnsTable = computed(() =>
-  columns.filter((column) => selectedColumns.value.includes(column))
+// const columnsTable = computed(
+//   () => columns.filter((column) => selectedColumns.value.includes(column)),
+//   // Remove 'Actions' column if it's a small screen
+//   isSmallScreen.value ? columns.key !== 'actions' : true
+// )
+
+// Compute the columns for the table, conditionally hide 'Actions', 'Payload', and 'Flight Route' columns on small screens
+const columnsTable = computed(
+  () =>
+    isSmallScreen.value
+      ? columns.filter(
+          (column) =>
+            !['actions', 'payload', 'flight_route'].includes(column.key)
+        ) // Exclude 'Actions', 'Payload', and 'Flight Route' columns for small screens
+      : columns // Include all columns for larger screens
 )
 
 // Selected Rows
@@ -153,6 +169,20 @@ const showBlock = useState('showBlock', () => true)
 const toggleBlockVisibility = (value: boolean) => {
   showBlock.value = value
 }
+
+const handleResize = () => {
+  isSmallScreen.value = window.innerWidth <= 768 // Adjust the pixel value for your target screen size
+}
+
+// Add resize event listener to update screen size check
+onMounted(() => {
+  handleResize()
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
 </script>
 
 <template>
@@ -218,32 +248,34 @@ const toggleBlockVisibility = (value: boolean) => {
     >
       <template #Airline_info-data="{ row }">
         <div class="freighter-header">
-          <div class="freighter-logo">
-            <!-- Airline Logo (if available) -->
+          <!-- <div v-if="!isSmallScreen" class="freighter-logo">
             <img :src="row.airlines.logo" alt="Airline Logo" />
-          </div>
+          </div> -->
           <div class="freighter-info">
-            <div class="flex flex-col">
-              <p class="font-black text-pink-500 text-xl">
+            <div class="flex flex-col text-left">
+              <p class="font-black text-pink-500 text-xl sm:text-sm text-left">
                 {{ row.airlines.iata }}
-                <span class="font-bold font-mono text-gray-400 text-xl">
+                <span
+                  class="font-bold font-mono text-gray-400 text-xl sm:text-sm"
+                >
                   <NuxtLink :to="`/flights/freighter/${row.id}`">
                     {{ row.flight_number }}
                   </NuxtLink>
                 </span>
               </p>
-              <span class="font-light text-gray-500 text-sm">{{
+              <span class="font-light text-gray-500 text-sm sm:text-xs">{{
                 row.airlines.name
               }}</span>
               <div v-if="showBlock">
-                <p class="font-bold text-sm text-gray-400">
+                <p class="font-bold text-sm sm:text-xs text-gray-400">
                   <Plane
-                    class="w-[130px] text-pink-600"
+                    class="w-[110px] text-pink-600"
                     :font-controlled="false"
                   />
 
                   {{ row.aircrafts_register.ac_code }}
-                  <span class="font-normal text-sm text-gray-400 font-mono"
+                  <span
+                    class="font-normal text-sm sm:text-xs text-gray-400 font-mono"
                     >REG:{{
                       row.aircrafts_register.ac_registration_number
                     }}</span
@@ -261,39 +293,43 @@ const toggleBlockVisibility = (value: boolean) => {
               class="text-[0.6rem] text-tiny uppercase tracking-widest dark:text-gray-500"
               >Planning</span
             >
-            <p class="font-bold text-gray-600 text-md text-left">
+            <p class="font-bold text-gray-600 text-md sm:text-xs text-left">
               PSD:
               <span class="font-mono text-slate-400 text-left">{{
                 formatOnlyDate(row.flight_psd)
               }}</span>
             </p>
-            <p class="font-bold text-gray-600 text-md text-left">
+            <p class="font-bold text-gray-600 text-md sm:text-xs text-left">
               PST:
-              <span class="font-mono text-slate-400 text-left">{{
+              <span class="font-mono text-slate-400 sm:text-xs text-left">{{
                 row.flight_pst
               }}</span>
             </p>
           </div>
           <div v-if="showBlock">
             <span
-              className="text-[0.6rem] text-tiny uppercase tracking-widest dark:text-sky-500"
+              className="text-[0.6rem] text-tiny uppercase tracking-widest dark:text-gray-500"
             >
               Scheduled
             </span>
             <div className="flex flex-row">
-              <Icon icon="icon-park-outline:schedule" />
-              <p className="ml-1 font-bold text-pink-600 text-xs text-left">
+              <Icon v-if="!isSmallScreen" icon="icon-park-outline:schedule" />
+              <p
+                className="ml-1 font-normal text-pink-600 sm:text-xs sm:text-xs text-left"
+              >
                 ETA:
-                <span className="font-mono text-slate-400 text-left">
+                <span className="font-mono text-slate-400 sm:text-xs text-left">
                   14:55 29/08/24
                 </span>
               </p>
             </div>
             <div className="flex flex-row">
-              <Icon icon="mdi:airplane-schedule" />
-              <p className="ml-1 font-bold text-pink-600 text-xs text-left">
+              <Icon v-if="!isSmallScreen" icon="mdi:airplane-schedule" />
+              <p
+                className="ml-1 font-normal text-pink-600 sm:text-xs text-left"
+              >
                 ATA:
-                <span className="font-mono text-slate-400 text-left">
+                <span className="font-mono text-slate-400 sm:text-xs text-left">
                   15:01 29/08/24
                 </span>
               </p>
@@ -307,15 +343,18 @@ const toggleBlockVisibility = (value: boolean) => {
           <!-- Check if the flight is inbound -->
           <template v-if="row.flight_type === 'Inbound'">
             <div class="uppercase">
-              <span class="font-bold text-xl text-left">{{
+              <span class="font-bold md:text-xl sm:text-xs text-left">{{
                 row.airports.iata
               }}</span>
               <span class="text-pink-600">→</span>
-              <span class="font-bold text-xl text-orange-600 text-left"
+              <span
+                class="font-bold text-xl sm:text-xs text-orange-600 text-left"
                 >SVO</span
               >
               <div v-if="showBlock">
-                <p class="font-normal text-slate-400 tracking-widest text-left">
+                <p
+                  class="font-normal text-slate-400 sm:text-xs tracking-widest text-left"
+                >
                   {{ row.flight_type }}
                 </p>
               </div>
@@ -325,9 +364,13 @@ const toggleBlockVisibility = (value: boolean) => {
           <!-- If not inbound, consider it outbound -->
           <template v-else>
             <div class="text-left uppercase">
-              <span class="font-bold text-xl text-orange-600">SVO</span>
+              <span class="font-bold text-xl sm:text-xs text-orange-600"
+                >SVO</span
+              >
               <span class="text-pink-600">→</span>
-              <span class="font-bold text-xl">{{ row.airports.iata }}</span>
+              <span class="font-bold md:text-xl sm:text-xs">{{
+                row.airports.iata
+              }}</span>
               <div v-if="showBlock">
                 <p class="font-normal text-slate-500 tracking-widest">
                   {{ row.flight_type }}
@@ -335,9 +378,9 @@ const toggleBlockVisibility = (value: boolean) => {
               </div>
             </div>
           </template>
-          <div class="flex flex-col" v-if="showBlock">
+          <div v-if="showBlock" class="flex flex-col">
             <span
-              class="text-xs text-tiny font-light uppercase tracking-widest text-sky-600"
+              class="text-xs sm:text-xs text-tiny font-light uppercase tracking-widest text-sky-600"
               >Connection</span
             >
             <p
@@ -459,7 +502,11 @@ const toggleBlockVisibility = (value: boolean) => {
           </UCard>
         </UModal>
       </template>
-      <template #flight_handling_status-data="{ row }" class="w-1/4">
+      <template
+        v-if="!isSmallScreen"
+        #flight_handling_status-data="{ row }"
+        class="w-1/4"
+      >
         <UBadge
           size="lg"
           :label="row.flight_handling_status"
@@ -468,7 +515,7 @@ const toggleBlockVisibility = (value: boolean) => {
         />
       </template>
 
-      <template #actions-data="{ row }">
+      <template v-if="!isSmallScreen" #actions-data="{ row }">
         <UButton
           v-if="row.flight_handling_status !== 'Completed'"
           icon="i-heroicons-check"
@@ -489,7 +536,7 @@ const toggleBlockVisibility = (value: boolean) => {
           square
         />
       </template>
-      <template #payload-data="{ row }">
+      <template v-if="!isSmallScreen" #payload-data="{ row }">
         <div class="flex flex-col">
           <!-- Link to manifest generator -->
           <div class="flex flex-row p-2">
@@ -501,7 +548,7 @@ const toggleBlockVisibility = (value: boolean) => {
               class="ml-2"
             />
           </div>
-          <div class="flex flex-row p-2" v-if="showBlock">
+          <div v-if="showBlock" class="flex flex-row p-2">
             <UCheckbox disabled label="LDM" :model-value="row.hasLDM" />
             <UCheckbox
               disabled
@@ -511,7 +558,7 @@ const toggleBlockVisibility = (value: boolean) => {
             />
           </div>
           <div v-if="row.hasFFM && row.parsedFFM">
-            <div class="flex flex-row" v-if="showBlock">
+            <div v-if="showBlock" class="flex flex-row">
               <div class="">
                 <p class="ml-2 font-bold font-mono">
                   ULD
@@ -603,7 +650,7 @@ const toggleBlockVisibility = (value: boolean) => {
 
 .freighter-info {
   flex-grow: 1;
-  margin-left: 1rem;
+  /* margin-left: 1rem; */
 }
 
 .freighter-info .flight-number {

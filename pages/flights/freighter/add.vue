@@ -1,19 +1,17 @@
 <template>
   <LayoutsPageWrapper>
     <LayoutsPageSection>
-      <div>
+      <div class="p-4 md:p-8">
         <div class="add-freighter-form">
           <form @submit.prevent="handleSubmit">
-            <div class="">
+            <div>
               <UCard>
                 <template #header>
-                  <div class="flex flex-col space-y-6">
+                  <div class="flex flex-col space-y-4 md:space-y-6">
                     <p class="text-sm font-light dark:text-gray-400">
                       Base information
                     </p>
-                    <div class="grid grid-cols-4">
-                      <!-- Display dynamic notification with a plane icon when connection flight is set -->
-                      <!-- Display dynamic notification with flight number and plane icon -->
+                    <div class="grid grid-cols-1 md:grid-cols-4">
                       <p
                         v-if="form.connection_id"
                         class="typewriter-placeholder text-lg font-semibold text-sky-500"
@@ -27,19 +25,10 @@
                       </p>
                     </div>
                   </div>
-
-                  <!-- Notification for Connection Flight success -->
-                  <!-- <UNotification
-                    v-if="showNotification"
-                    description="Connection Flight was set successfully"
-                    :id="1"
-                    :timeout="3000"
-                    title="Notification"
-                  /> -->
                 </template>
-                <div class="grid grid-cols-4 gap-4">
-                  <div class="grid grid-cols-2 gap-4">
-                    <div class="flex flex-col space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex flex-col space-y-4 md:space-y-6">
                       <UFormGroup label="Flight PSD" required>
                         <UInput
                           id="flight_psd"
@@ -48,7 +37,7 @@
                           required
                         />
                       </UFormGroup>
-                      <UFormGroup label="Flight PST" class="" required>
+                      <UFormGroup label="Flight PST" required>
                         <UInput
                           v-model="form.flight_pst"
                           type="time"
@@ -56,7 +45,7 @@
                         />
                       </UFormGroup>
                     </div>
-                    <div class="flex flex-col space-y-6">
+                    <div class="flex flex-col space-y-4 md:space-y-6">
                       <UFormGroup label="Flight Type" required>
                         <USelect
                           v-model="selectedFlightType"
@@ -64,7 +53,7 @@
                           required
                         />
                       </UFormGroup>
-                      <UFormGroup label="Flight Number" class="" required>
+                      <UFormGroup label="Flight Number" required>
                         <UInput
                           v-model="form.flight_number"
                           placeholder="Enter flight number"
@@ -74,8 +63,8 @@
                     </div>
                   </div>
 
-                  <div class="flex flex-col">
-                    <UFormGroup label="Airline" class="">
+                  <div class="flex flex-col space-y-4 md:space-y-6">
+                    <UFormGroup label="Airline">
                       <SchedulerUiAirlineDropdown
                         :selected-airline="selectedAirline"
                         :airlines="airlines"
@@ -87,7 +76,6 @@
                     <UFormGroup
                       v-if="selectedAirline"
                       label="Aircraft Registration"
-                      class="mt-5"
                     >
                       <UInput
                         v-model="form.ac_register"
@@ -97,7 +85,8 @@
                       />
                     </UFormGroup>
                   </div>
-                  <div class="flex flex-col">
+
+                  <div class="flex flex-col space-y-4 md:space-y-6">
                     <UFormGroup label="Flight Route" required>
                       <UInput
                         id="flight_route"
@@ -105,23 +94,8 @@
                         placeholder="Enter flight route"
                         required
                       />
-                      <!-- <SchedulerUiAirportDropdown /> -->
                     </UFormGroup>
-                    <!-- <UFormGroup label="Connection flight" class="mt-5">
-                      <UInput
-                        id="connection_id"
-                        :value="
-                          form.connection_id
-                            ? form.connection_id.flight_number
-                            : ''
-                        "
-                        placeholder="Select connection flight"
-                        readonly
-                      />
-                    </UFormGroup> -->
-
-                    <!-- Include the child component -->
-                    <UFormGroup label="Connection flight" class="mt-5">
+                    <UFormGroup label="Connection flight">
                       <SchedulerUiConnectionFlight
                         @select-flight="updateConnectionId"
                       />
@@ -129,6 +103,7 @@
                   </div>
                 </div>
               </UCard>
+
               <UCard class="mt-4" background="slate-900/50">
                 <template #header>
                   <p class="text-sm font-light dark:text-gray-400">
@@ -179,126 +154,82 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { format } from 'date-fns'
-// import { useSupabaseClient } from '@supabase/vue'
-
-// Compiler micro
-definePageMeta({ layout: 'page' })
 useHead({ title: 'Add Flight' })
 
-// Initialize state variables
 const flightTypes = ['Arrival', 'Departure']
 const selectedFlightType = ref(flightTypes[0])
 const items = ref([])
-const supabase = useSupabaseClient()
 const selectedAirline = ref(null)
 const isDropdownOpen = ref(false)
 const isOpen = ref(false)
-const date = ref(new Date())
-// Add state for the notification
 const showNotification = ref(false)
 
-// Form state
 const form = ref({
   flight_number: '',
   flight_type: '',
   flight_route: '',
   flight_psd: '',
   flight_pst: '',
-  flight_payload: '',
   airline: '',
   ac_register: '',
-  description: '',
   connection_id: null,
   connection_flight_number: '',
 })
 
-// Composable to fetch airlines
-const {
-  airlines,
-  isLoading: isAirlinesLoading,
-  error: airlinesError,
-  fetchAirlines,
-} = useAirlinesForFreighter()
+// Airline fetching logic (from your composable)
+const { airlines, isLoading, error, fetchAirlines } = useAirlinesForFreighter()
 
-// Composable for fetching aircrafts by IATA
-const {
-  aircrafts,
-  loading: isAircraftsLoading,
-  error: aircraftsError,
-  fetchAircrafts,
-} = useRegisterByIata()
+// Fetch aircrafts
+const { aircrafts, fetchAircrafts } = useRegisterByIata()
 
-// Fetch airlines on component mount
 onMounted(() => {
-  fetchAirlines() // Fetch airlines on mount
+  fetchAirlines()
 
-  // Update the items for the dropdown when airlines data is updated
   watch(airlines, (newAirlines) => {
     if (newAirlines) {
       items.value = newAirlines.map((airline) => ({
         label: `${airline.name} (${airline.iata})`,
         value: airline.id,
-        iata: airline.iata, // Add the IATA code for display
+        iata: airline.iata,
       }))
     }
   })
 })
 
-// Function to handle airline selection
-const selectAirline = (item: any) => {
-  form.value.airline = item.value // Set airline ID in the form
+const selectAirline = (item) => {
+  form.value.airline = item.value
   selectedAirline.value = item
-  isDropdownOpen.value = false // Close dropdown after selection
-
-  // Fetch aircrafts for the selected airline
+  isDropdownOpen.value = false
   fetchAircrafts(item.value)
 }
 
-// Method to handle aircraft selection
 const selectAircraft = (aircraft) => {
   form.value.ac_register = aircraft.ac_registration_number
-  isOpen.value = false // Close the modal
-  console.log('Selected Aircraft:', aircraft) // Debugging line
+  isOpen.value = false
 }
 
-// Function to open the modal
 const openModal = () => {
   if (selectedAirline.value) {
-    fetchAircrafts(selectedAirline.value.iata) // Fetch aircrafts for the selected airline
-    isOpen.value = true // Open the modal
-  } else {
-    console.log('No airline selected') // Debugging line
+    fetchAircrafts(selectedAirline.value.iata)
+    isOpen.value = true
   }
 }
 
-// Update form connection_id when flight is selected
-// Function to update form connection_id when flight is selected
 const updateConnectionId = (flight, flightNumber) => {
-  // Only trigger notification if a valid connection flight is selected
   if (flight) {
     form.value.connection_id = flight
     form.value.connection_flight_number = flightNumber
-
-    // Show the notification after setting connection flight
     showNotification.value = true
-
-    // Auto-hide the notification after 3 seconds
-    setTimeout(() => {
-      showNotification.value = false
-    }, 1200)
+    setTimeout(() => (showNotification.value = false), 1200)
   } else {
     form.value.connection_id = null
     form.value.connection_flight_number = ''
-    // Do not trigger the notification when reset or no flight is selected
-    showNotification.value = false
   }
 }
 
-// Form submission handler
 const handleSubmit = async () => {
   console.log('Submitting form:', form.value)
   try {
-    // Add your submission logic here
     alert('Freighter flight added successfully!')
   } catch (err) {
     console.error('Error adding freighter flight:', err)
@@ -308,7 +239,6 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-/* Slide-in animation */
 @keyframes slideRight {
   from {
     transform: translateX(100%);
@@ -324,7 +254,6 @@ const handleSubmit = async () => {
   animation: slideRight 0.5s ease-out;
 }
 
-/* Typewriter effect for placeholder */
 @keyframes typewriter {
   from {
     width: 0;
@@ -339,11 +268,10 @@ const handleSubmit = async () => {
   overflow: hidden;
   white-space: nowrap;
   border-right: 0.15em solid;
-  animation: typewriter 4s steps(40, end) 1s 1 normal both,
+  animation: typewriter 2s steps(40, end) 1s 1 normal both,
     blink-caret 500ms steps(40, end) infinite;
 }
 
-/* Blinking caret effect */
 @keyframes blink-caret {
   from,
   to {
