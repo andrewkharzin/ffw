@@ -22,14 +22,22 @@ generateFFMPdf()
 // Columns
 const columns = [
   {
+    key: 'Date_request',
+    label: 'Date Req',
+    sortable: true,
+    width: '10%', // Fixed width
+  },
+  {
     key: 'Airline_info',
     label: 'Airline',
     sortable: false,
+    width: '40%', // Fixed width
   },
   {
     key: 'Date',
     label: 'Date',
     sortable: true,
+    width: '10%', // Fixed width
   },
   // {
   //   key: 'flight_pst',
@@ -46,22 +54,23 @@ const columns = [
     key: 'flight_route',
     label: 'Route',
     sortable: true,
+    width: '30%', // Fixed width
   },
   // {
   //   key: 'flight_handling_status',
   //   label: 'Status',
   //   sortable: true,
   // },
-  {
-    key: 'payload',
-    label: 'Payload',
-    sortable: false,
-  },
-  {
-    key: 'actions',
-    label: 'Actions',
-    sortable: false,
-  },
+  // {
+  //   key: 'payload',
+  //   label: 'Payload',
+  //   sortable: false,
+  // },
+  // {
+  //   key: 'actions',
+  //   label: 'Actions',
+  //   sortable: false,
+  // },
 ]
 
 const selectedColumns = ref(columns)
@@ -240,12 +249,21 @@ onUnmounted(() => {
       sort-mode="manual"
       class="w-full"
       :ui="{
-        td: { base: 'max-w-[0] truncate text-left px-4 py-2' },
-        th: { base: 'text-left px-4 py-2' },
+        td: { base: 'text-left', style: { width: columns.width } },
+        th: { base: 'text-left', style: { width: columns.width } },
         default: { checkbox: { color: 'gray' } },
       }"
       @select="select"
     >
+      <template #Date_request-data="{ row }">
+        <div>
+          <p
+            class="text-left text-md font-bold text-left dark:text-gray-300 text-sky-700"
+          >
+            {{ formatOnlyDate(row.flight_psd) }}
+          </p>
+        </div>
+      </template>
       <template #Airline_info-data="{ row }">
         <div class="freighter-header">
           <!-- <div v-if="!isSmallScreen" class="freighter-logo">
@@ -253,35 +271,38 @@ onUnmounted(() => {
           </div> -->
           <div class="freighter-info">
             <div class="flex flex-col text-left">
-              <p class="font-black text-pink-500 text-xl sm:text-sm text-left">
-                {{ row.airlines.iata }}
-                <span
-                  class="font-bold font-mono text-gray-400 text-xl sm:text-sm"
+              <div class="flex flex-row">
+                <p
+                  class="font-black text-pink-500 text-xl sm:text-md text-left"
                 >
-                  <NuxtLink :to="`/flights/freighter/${row.id}`">
-                    {{ row.flight_number }}
-                  </NuxtLink>
-                </span>
-              </p>
-              <span class="font-light text-gray-500 text-sm sm:text-xs">{{
-                row.airlines.name
-              }}</span>
-              <div v-if="showBlock">
-                <p class="font-bold text-sm sm:text-xs text-gray-400">
-                  <Plane
-                    class="w-[110px] text-pink-600"
-                    :font-controlled="false"
-                  />
-
-                  {{ row.aircrafts_register.ac_code }}
+                  {{ row.airlines.iata }}
                   <span
-                    class="font-normal text-sm sm:text-xs text-gray-400 font-mono"
-                    >REG:{{
-                      row.aircrafts_register.ac_registration_number
-                    }}</span
+                    class="font-bold font-mono text-gray-400 text-xl sm:text-md"
                   >
+                    <NuxtLink :to="`/flights/freighter/${row.id}`">
+                      {{ row.flight_number }}
+                    </NuxtLink>
+                  </span>
+                </p>
+                <p
+                  v-if="showBlock"
+                  class="font-bold text-xl sm:text-md text-teal-500"
+                >
+                  | {{ row.aircrafts_register.ac_code }}
+                  <span
+                    class="font-normal text-xl sm:text-md text-pink-500 font-mono"
+                  >
+                    <UBadge color="white" variant="solid">{{
+                      row.aircrafts_register.ac_registration_number
+                    }}</UBadge>
+                  </span>
                 </p>
               </div>
+              <span
+                v-if="showBlock"
+                class="font-light text-gray-500 text-sm sm:text-xs"
+                >{{ row.airlines.name }}</span
+              >
             </div>
           </div>
         </div>
@@ -290,6 +311,7 @@ onUnmounted(() => {
         <div class="freighter-header flex flex-col text-left">
           <div>
             <span
+              v-if="showBlock"
               class="text-[0.6rem] text-tiny uppercase tracking-widest dark:text-gray-500"
               >Planning</span
             >
@@ -343,32 +365,32 @@ onUnmounted(() => {
           <!-- Check if the flight is inbound -->
           <template v-if="row.flight_type === 'Inbound'">
             <div class="uppercase">
-              <span class="font-bold md:text-xl sm:text-xs text-left">{{
+              <span class="font-bold md:text-xl sm:text-md text-left">{{
                 row.airports.iata
               }}</span>
               <span class="text-pink-600">→</span>
               <span
-                class="font-bold text-xl sm:text-xs text-orange-600 text-left"
+                class="font-bold text-xl sm:text-md text-orange-600 text-left"
                 >SVO</span
               >
-              <div v-if="showBlock">
+              <!-- <div v-if="showBlock">
                 <p
                   class="font-normal text-slate-400 sm:text-xs tracking-widest text-left"
                 >
                   {{ row.flight_type }}
                 </p>
-              </div>
+              </div> -->
             </div>
           </template>
 
           <!-- If not inbound, consider it outbound -->
           <template v-else>
             <div class="text-left uppercase">
-              <span class="font-bold text-xl sm:text-xs text-orange-600"
+              <span class="font-bold text-xl sm:text-md text-orange-600"
                 >SVO</span
               >
               <span class="text-pink-600">→</span>
-              <span class="font-bold md:text-xl sm:text-xs">{{
+              <span class="font-bold md:text-xl sm:text-md">{{
                 row.airports.iata
               }}</span>
               <div v-if="showBlock">

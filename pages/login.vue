@@ -29,11 +29,11 @@ const userLogin = async () => {
   }
 }
 
-// watchEffect(() => {
-//   if (user.value) {
-//     return navigateTo('/')
-//   }
-// })
+watchEffect(() => {
+  if (user.value) {
+    return navigateTo('/')
+  }
+})
 
 // Set form focus when inputs are clicked
 const setFormFocused = () => {
@@ -51,14 +51,14 @@ const removeFormFocus = () => {
       class="logon min-h-screen flex justify-center items-center bg-cover bg-center px-4 sm:px-8 md:px-12 lg:px-24"
     >
       <!-- Логотип -->
-      <div
+      <!-- <div
         class="logo-container w-full max-w-[440px] sm:max-w-[250px] md:max-w-[400px] lg:max-w-[400px] mx-auto"
       >
         <Logo
           class="w-full h-auto rounded-tl-2xl rounded-br-2xl bg-gradient-to-br from-pink-600/20 via-slate-800 text-gray-200 to-slate-900/10"
           :font-controlled="false"
         />
-      </div>
+      </div> -->
       <form
         :class="isFormFocused ? 'form-focused' : ''"
         class="bg-opacity-80 flex flex-col rounded-lg bg-gray-900 p-8 w-full max-w-md"
@@ -202,7 +202,19 @@ form {
   ); /* Gradient background */
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1024px) and (max-width: 1440px) {
+  .logo-container {
+    top: 15%;
+    max-width: 480px;
+  }
+  .form {
+    top: 40%;
+    position: relative;
+    z-index: 2;
+  }
+}
+
+@media (min-width: 1441px) and (max-width: 1920px) {
   .logo-container {
     top: 20%;
     max-width: 480px;
