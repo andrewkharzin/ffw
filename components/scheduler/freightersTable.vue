@@ -86,9 +86,9 @@ const columnsTable = computed(
     isSmallScreen.value
       ? columns.filter(
           (column) =>
-            !['actions', 'payload', 'flight_route'].includes(column.key)
+            !['actions', 'payload', 'flight_route'].includes(column.key),
         ) // Exclude 'Actions', 'Payload', and 'Flight Route' columns for small screens
-      : columns // Include all columns for larger screens
+      : columns, // Include all columns for larger screens
 )
 
 // Selected Rows
@@ -127,7 +127,7 @@ const pageCount = ref(10)
 const pageTotal = computed(() => props.freighters.length)
 const pageFrom = computed(() => (page.value - 1) * pageCount.value + 1)
 const pageTo = computed(() =>
-  Math.min(page.value * pageCount.value, pageTotal.value)
+  Math.min(page.value * pageCount.value, pageTotal.value),
 )
 // const logoSrc = computed(() => props.freighters.airlines.logo || '')
 
@@ -166,7 +166,7 @@ function closeConnectionModal() {
 // Function to check if a message type exists for a freighter
 function hasMessageType(
   row: (typeof props.freighters)[0],
-  type: MessageType
+  type: MessageType,
 ): boolean {
   return row.flt_messages.some((msg) => msg.message_type === type)
 }
@@ -281,37 +281,7 @@ onUnmounted(() => {
           <!-- <div v-if="!isSmallScreen" class="freighter-logo">
             <img :src="row.airlines.logo" alt="Airline Logo" />
           </div> -->
-          <div class="freighter-info">
-            <div class="flex flex-col text-left">
-              <div class="flex flex-row">
-                <p
-                  class="font-black text-pink-500 text-xl sm:text-md text-left"
-                >
-                  {{ row.airlines.iata }}
-                  <span
-                    class="font-bold font-mono text-gray-400 text-xl sm:text-md"
-                  >
-                    <NuxtLink :to="`/flights/freighter/${row.id}`">
-                      {{ row.flight_number }}
-                    </NuxtLink>
-                  </span>
-                </p>
-                <p class="ml-2 font-normal text-xl sm:text-md text-teal-500">
-                  {{ 'FLT' }}{{ row.aircrafts_register.ac_code }}
-                  <span
-                    class="font-normal text-xl sm:text-md text-pink-500 font-mono"
-                  >
-                    {{ row.aircrafts_register.ac_registration_number }}
-                  </span>
-                </p>
-              </div>
-              <span
-                v-if="showBlock"
-                class="font-light text-gray-500 text-sm sm:text-xs"
-                >{{ row.airlines.name }}</span
-              >
-            </div>
-          </div>
+          <SchedulerUiAirlineGrid v-slot="{ row }" :row="row" />
         </div>
       </template>
       <template #Date-data="{ row }">
