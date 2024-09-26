@@ -23,20 +23,20 @@ generateFFMPdf()
 const columns = [
   {
     key: 'Date_request',
-    label: 'Date Req',
+    label: 'PFDaT',
     sortable: true,
-    width: '10%', // Fixed width
+    width: '15px', // Fixed width
   },
   {
     key: 'Airline_info',
-    label: 'Airline',
+    label: 'Airline/Number/FLT',
     sortable: false,
-    width: '40%', // Fixed width
+    width: '25px', // Fixed width
   },
   {
     key: 'Date',
-    label: 'Date',
-    sortable: true,
+    label: 'Scheduled',
+    sortable: false,
     width: '10%', // Fixed width
   },
   // {
@@ -249,18 +249,30 @@ onUnmounted(() => {
       sort-mode="manual"
       class="w-full"
       :ui="{
-        td: { base: 'text-left', style: { width: columns.width } },
-        th: { base: 'text-left', style: { width: columns.width } },
-        default: { checkbox: { color: 'gray' } },
+        td: { base: 'text-left', style: (column) => ({ width: column.width }) },
+        th: { base: 'text-left', style: (column) => ({ width: column.width }) },
       }"
       @select="select"
     >
       <template #Date_request-data="{ row }">
         <div>
           <p
-            class="text-left text-md font-bold text-left dark:text-gray-300 text-sky-700"
+            class="text-left text-xl sm:text-md font-mono font-black text-left dark:text-gray-400 text-sky-700"
           >
             {{ formatOnlyDate(row.flight_psd) }}
+            <span
+              class="text-left text-xl sm:text-md font-mono font-black text-left dark:text-red-400 text-red-400"
+              >{{ row.flight_pst }}</span
+            >
+          </p>
+        </div>
+      </template>
+      <template #Flight_time-data="{ row }">
+        <div>
+          <p
+            class="text-left text-xl sm:text-md font-mono font-black text-left dark:text-gray-400 text-sky-700"
+          >
+            {{ row.flight_pst }}
           </p>
         </div>
       </template>
@@ -284,17 +296,12 @@ onUnmounted(() => {
                     </NuxtLink>
                   </span>
                 </p>
-                <p
-                  v-if="showBlock"
-                  class="font-bold text-xl sm:text-md text-teal-500"
-                >
-                  | {{ row.aircrafts_register.ac_code }}
+                <p class="ml-2 font-normal text-xl sm:text-md text-teal-500">
+                  {{ 'FLT' }}{{ row.aircrafts_register.ac_code }}
                   <span
                     class="font-normal text-xl sm:text-md text-pink-500 font-mono"
                   >
-                    <UBadge color="white" variant="solid">{{
-                      row.aircrafts_register.ac_registration_number
-                    }}</UBadge>
+                    {{ row.aircrafts_register.ac_registration_number }}
                   </span>
                 </p>
               </div>
@@ -310,30 +317,6 @@ onUnmounted(() => {
       <template #Date-data="{ row }">
         <div class="freighter-header flex flex-col text-left">
           <div>
-            <span
-              v-if="showBlock"
-              class="text-[0.6rem] text-tiny uppercase tracking-widest dark:text-gray-500"
-              >Planning</span
-            >
-            <p class="font-bold text-gray-600 text-md sm:text-xs text-left">
-              PSD:
-              <span class="font-mono text-slate-400 text-left">{{
-                formatOnlyDate(row.flight_psd)
-              }}</span>
-            </p>
-            <p class="font-bold text-gray-600 text-md sm:text-xs text-left">
-              PST:
-              <span class="font-mono text-slate-400 sm:text-xs text-left">{{
-                row.flight_pst
-              }}</span>
-            </p>
-          </div>
-          <div v-if="showBlock">
-            <span
-              className="text-[0.6rem] text-tiny uppercase tracking-widest dark:text-gray-500"
-            >
-              Scheduled
-            </span>
             <div className="flex flex-row">
               <Icon v-if="!isSmallScreen" icon="icon-park-outline:schedule" />
               <p
