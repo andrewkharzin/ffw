@@ -44,7 +44,8 @@ export function useFreighters() {
           flight_handling_status,
           airports:flight_route(iata),
           airlines:airline(logo, iata, name),
-          aircrafts_register:ac_register(ac_registration_number, ac_code)
+          aircrafts_register:ac_register(ac_registration_number, ac_code),
+          freighter_schedules:connection_id(flight_number, flight_route, airlines:airline(logo, iata, name))
         `,
         )
         .eq('flight_type', selectedFlightType.value)

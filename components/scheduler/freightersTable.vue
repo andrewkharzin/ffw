@@ -86,9 +86,9 @@ const columnsTable = computed(
     isSmallScreen.value
       ? columns.filter(
           (column) =>
-            !['actions', 'payload', 'flight_route'].includes(column.key),
+            !['actions', 'payload', 'flight_route'].includes(column.key)
         ) // Exclude 'Actions', 'Payload', and 'Flight Route' columns for small screens
-      : columns, // Include all columns for larger screens
+      : columns // Include all columns for larger screens
 )
 
 // Selected Rows
@@ -127,7 +127,7 @@ const pageCount = ref(10)
 const pageTotal = computed(() => props.freighters.length)
 const pageFrom = computed(() => (page.value - 1) * pageCount.value + 1)
 const pageTo = computed(() =>
-  Math.min(page.value * pageCount.value, pageTotal.value),
+  Math.min(page.value * pageCount.value, pageTotal.value)
 )
 // const logoSrc = computed(() => props.freighters.airlines.logo || '')
 
@@ -150,7 +150,7 @@ function getStatusColor(status: string): string {
 
 // Modal Logic
 const selectedFlight = ref(null) // добавляем реактивное состояние
-const isOpen = ref(false)
+const isModelOpen = ref(false)
 const selectedConnection = ref(null)
 
 function openConnectionModal(connectionFlight: any) {
@@ -166,7 +166,7 @@ function closeConnectionModal() {
 // Function to check if a message type exists for a freighter
 function hasMessageType(
   row: (typeof props.freighters)[0],
-  type: MessageType,
+  type: MessageType
 ): boolean {
   return row.flt_messages.some((msg) => msg.message_type === type)
 }
@@ -255,37 +255,23 @@ onUnmounted(() => {
       @select="select"
     >
       <template #Date_request-data="{ row }">
-        <div>
-          <p
-            class="text-left text-xl sm:text-md font-mono font-black text-left dark:text-gray-400 text-sky-700"
-          >
-            {{ formatOnlyDate(row.flight_psd) }}
-            <span
-              class="text-left text-xl sm:text-md font-mono font-black text-left dark:text-red-400 text-red-400"
-              >{{ row.flight_pst }}</span
-            >
-          </p>
-        </div>
-      </template>
-      <template #Flight_time-data="{ row }">
-        <div>
-          <p
-            class="text-left text-xl sm:text-md font-mono font-black text-left dark:text-gray-400 text-sky-700"
-          >
-            {{ row.flight_pst }}
-          </p>
-        </div>
+        <SchedulerUiDateTime :date="row.flight_psd" :time="row.flight_pst" />
       </template>
       <template #Airline_info-data="{ row }">
-        <div class="freighter-header">
-          <!-- <div v-if="!isSmallScreen" class="freighter-logo">
+        <!-- <div class="freighter-header"> -->
+        <!-- <div v-if="!isSmallScreen" class="freighter-logo">
             <img :src="row.airlines.logo" alt="Airline Logo" />
           </div> -->
-          <SchedulerUiAirlineGrid v-slot="{ row }" :row="row" />
-        </div>
+        <!-- </div> -->
+        <SchedulerUiAirlineGrid v-slot="{ row }" :row="row" />
       </template>
       <template #Date-data="{ row }">
-        <div class="freighter-header flex flex-col text-left">
+        <SchedulerUiScheduledTime
+          :eta="'14:55 29/08/24'"
+          :ata="'15:01 29/08/24'"
+          :isSmallScreen="false"
+        />
+        <!-- <div class="freighter-header flex flex-col text-left">
           <div>
             <div className="flex flex-row">
               <Icon v-if="!isSmallScreen" icon="icon-park-outline:schedule" />
@@ -310,71 +296,62 @@ onUnmounted(() => {
               </p>
             </div>
           </div>
-        </div>
+        </div> -->
       </template>
 
       <template #flight_route-data="{ row }">
-        <div class="freighter-header flex flex-col">
-          <!-- Check if the flight is inbound -->
-          <template v-if="row.flight_type === 'Inbound'">
-            <div class="uppercase">
-              <span class="font-bold md:text-xl sm:text-md text-left">{{
-                row.airports.iata
-              }}</span>
-              <span class="text-pink-600">→</span>
-              <span
-                class="font-bold text-xl sm:text-md text-orange-600 text-left"
-                >SVO</span
-              >
-              <!-- <div v-if="showBlock">
-                <p
-                  class="font-normal text-slate-400 sm:text-xs tracking-widest text-left"
-                >
-                  {{ row.flight_type }}
-                </p>
-              </div> -->
-            </div>
-          </template>
+        <div class="card bg-slate-950/30">
+          <div class="card-content">
+            <div class="flex flex-col">
+              <template v-if="row.flight_type === 'Inbound'">
+                <div class="uppercase">
+                  <span class="font-bold md:text-md sm:text-md text-left">{{
+                    row.airports.iata
+                  }}</span>
+                  <span class="text-pink-600">→</span>
+                  <span
+                    class="font-bold text-md sm:text-md text-orange-600 text-left"
+                    >SVO</span
+                  >
+                </div>
+              </template>
+              <template v-else>
+                <div class="text-left uppercase">
+                  <span class="font-bold text-md sm:text-md text-orange-600"
+                    >SVO</span
+                  >
+                  <span class="text-pink-600">→</span>
+                  <span class="font-bold md:text-md sm:text-md">{{
+                    row.airports.iata
+                  }}</span>
+                  <div v-if="showBlock">
+                    <p class="font-normal text-slate-500 tracking-widest">
+                      {{ row.flight_type }}
+                    </p>
+                  </div>
+                </div>
+              </template>
 
-          <!-- If not inbound, consider it outbound -->
-          <template v-else>
-            <div class="text-left uppercase">
-              <span class="font-bold text-xl sm:text-md text-orange-600"
-                >SVO</span
-              >
-              <span class="text-pink-600">→</span>
-              <span class="font-bold md:text-xl sm:text-md">{{
-                row.airports.iata
-              }}</span>
-              <div v-if="showBlock">
-                <p class="font-normal text-slate-500 tracking-widest">
-                  {{ row.flight_type }}
+              <div v-if="showBlock" class="flex flex-col">
+                <p
+                  class="border-b border-gray-400 font-light uppercase text-xs text-gray-400 text-left"
+                >
+                  <span
+                    v-if="
+                      row.freighter_schedules &&
+                      row.freighter_schedules.flight_number &&
+                      row.freighter_schedules.airlines.iata
+                    "
+                    @click="isModelOpen = true"
+                    class="p-1 hover:dark:text-pink-600 hover:text-lg"
+                  >
+                    {{ row.freighter_schedules.airlines.iata }}
+                    {{ row.freighter_schedules.flight_number }}
+                  </span>
+                  <span v-else class="text-sm font-bold text-pink-400">NO</span>
                 </p>
               </div>
             </div>
-          </template>
-          <div v-if="showBlock" class="flex flex-col">
-            <span
-              class="text-xs sm:text-xs text-tiny font-light uppercase tracking-widest text-sky-600"
-              >Connection</span
-            >
-            <p
-              class="mt-1 font-light uppercase text-xs text-gray-400 text-left"
-            >
-              <UButton
-                v-if="
-                  row.freight_schedules && row.freight_schedules.flight_number
-                "
-                size="xs"
-                variant="soft"
-                color="sky"
-                @click.stop="openConnectionModal(row.freight_schedules)"
-              >
-                {{ row.freight_schedules.airlines.iata
-                }}{{ row.freight_schedules.flight_number }}
-              </UButton>
-              <span v-else class="text-sm font-bold text-pink-400">NO</span>
-            </p>
           </div>
         </div>
         <!-- Modal for Flight Details -->
@@ -391,23 +368,23 @@ onUnmounted(() => {
                   <div class="freighter-logo">
                     <!-- Airline Logo (if available) -->
                     <img
-                      :src="row.freight_schedules.airlines.logo"
+                      :src="row.freighter_schedules.airlines.logo"
                       alt="Airline Logo"
                     />
                   </div>
                   <div class="freighter-info">
                     <div class="flex flex-col">
                       <p class="font-bold text-pink-500 text-xl">
-                        {{ row.freight_schedules.airlines.iata }}
+                        {{ row.freighter_schedules.airlines.iata }}
                         <span class="font-bold text-gray-400 text-xl">{{
-                          row.freight_schedules.flight_number
+                          row.freighter_schedules.flight_number
                         }}</span>
                       </p>
                       <span class="font-light text-gray-500 text-sm">{{
-                        row.freight_schedules.airlines.name
+                        row.freighter_schedules.airlines.name
                       }}</span>
                       <p class="font-bold text-sm text-gray-400">
-                        {{ row.freight_schedules.aircrafts_register.ac_code }}
+                        {{ row.freighter_schedules.aircrafts_register.ac_code }}
                         <span class="font-bold text-sm text-gray-400">{{
                           row.aircrafts_register.ac_registration_number
                         }}</span>
@@ -418,7 +395,7 @@ onUnmounted(() => {
                 <div class="p-4">
                   <div class="uppercase">
                     <span class="font-bold text-xl text-left">{{
-                      row.freight_schedules.airports.iata
+                      row.freighter_schedules.airports.iata
                     }}</span>
                     <span class="text-pink-600">→</span>
                     <span class="font-bold text-xl text-orange-600 text-left"
@@ -427,7 +404,7 @@ onUnmounted(() => {
                     <p
                       class="font-normal text-slate-400 tracking-widest text-left"
                     >
-                      {{ row.freight_schedules.flight_type }}
+                      {{ row.freighter_schedules.flight_type }}
                     </p>
                   </div>
                 </div>
@@ -442,13 +419,13 @@ onUnmounted(() => {
                   <p class="mt-2 font-bold text-gray-600 text-md text-left">
                     PSD:
                     <span class="font-mono text-slate-400 text-left">{{
-                      formatOnlyDate(row.freight_schedules.flight_psd)
+                      formatOnlyDate(row.freighter_schedules.flight_psd)
                     }}</span>
                   </p>
                   <p class="font-bold text-gray-600 text-md text-left">
                     PST:
                     <span class="font-mono text-slate-400 text-left">{{
-                      row.freight_schedules.flight_pst
+                      row.freighter_schedules.flight_pst
                     }}</span>
                   </p>
                 </div>
@@ -459,13 +436,13 @@ onUnmounted(() => {
                   <p class="mt-2 font-bold text-gray-600 text-md text-left">
                     PSD:
                     <span class="font-mono text-red-400 text-left">{{
-                      formatOnlyDate(row.freight_schedules.flight_psd)
+                      formatOnlyDate(row.freighter_schedules.flight_psd)
                     }}</span>
                   </p>
                   <p class="font-bold text-gray-600 text-md text-left">
                     PST:
                     <span class="font-mono text-red-400 text-left">{{
-                      row.freight_schedules.flight_pst
+                      row.freighter_schedules.flight_pst
                     }}</span>
                   </p>
                 </div>
@@ -679,5 +656,39 @@ onUnmounted(() => {
   color: #b0bec5;
   font-size: 0.8rem;
   text-align: right;
+}
+.card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 250px;
+  height: 50px;
+  border-radius: 8px;
+  padding: 10px;
+  color: white;
+}
+
+.card-left {
+  background: rgb(0, 174, 209);
+  width: 40px;
+  height: 100%;
+  display: flex;
+  border: #ec4899;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+}
+
+.card-left span {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-grow: 1;
+  padding-left: 10px;
 }
 </style>

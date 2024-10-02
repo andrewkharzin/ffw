@@ -154,6 +154,9 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { format } from 'date-fns'
+
+// Compiler micro
+definePageMeta({ layout: 'page' })
 useHead({ title: 'Add Flight' })
 
 const flightTypes = ['Arrival', 'Departure']
