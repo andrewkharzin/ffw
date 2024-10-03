@@ -1,6 +1,9 @@
 <template>
   <LayoutsPageWrapper>
     <LayoutsPageSection>
+      <LayoutsPageHeader>
+        <UBreadcrumb :links="links" class="p-4" />
+      </LayoutsPageHeader>
       <div class="p-4 md:p-8">
         <div class="add-freighter-form">
           <form @submit.prevent="handleSubmit">
@@ -11,9 +14,61 @@
                     <p class="text-sm font-light dark:text-gray-400">
                       Base information
                     </p>
-                    <div class="grid grid-cols-1 md:grid-cols-4">
+
+                    <!-- Block to display set form values -->
+                    <div class="grid grid-cols-2 gap-2">
+                      <div>
+                        <p
+                          v-if="form.flight_psd"
+                          ref="flightPsdRef"
+                          class="typewriter-effect"
+                          @animationend="stopBlinkingCaret($refs.flightPsdRef)"
+                        >
+                          Flight PSD: {{ form.flight_psd }}
+                        </p>
+                      </div>
+
                       <p
-                        v-if="form.connection_id"
+                        v-if="form.flight_pst"
+                        ref="flightPstRef"
+                        class="typewriter-effect"
+                        @animationend="stopBlinkingCaret($refs.flightPstRef)"
+                      >
+                        Flight PST: {{ form.flight_pst }}
+                      </p>
+
+                      <p
+                        v-if="form.flight_number"
+                        ref="flightNumberRef"
+                        class="typewriter-effect"
+                        @animationend="stopBlinkingCaret($refs.flightNumberRef)"
+                      >
+                        Flight Number: {{ form.flight_number }}
+                      </p>
+
+                      <p
+                        v-if="form.flight_route"
+                        ref="flightRouteRef"
+                        class="typewriter-effect"
+                        @animationend="stopBlinkingCaret($refs.flightRouteRef)"
+                      >
+                        Flight Route: {{ form.flight_route }}
+                      </p>
+
+                      <p
+                        v-if="form.ac_register"
+                        ref="acRegisterRef"
+                        class="typewriter-effect"
+                        @animationend="stopBlinkingCaret($refs.acRegisterRef)"
+                      >
+                        Aircraft Registration: {{ form.ac_register }}
+                      </p>
+                    </div>
+                    <div
+                      v-if="form.connection_id"
+                      class="grid grid-cols-1 md:grid-cols-4"
+                    >
+                      <p
                         class="typewriter-placeholder text-lg font-semibold text-sky-500"
                       >
                         Connection Set ✈️ -
@@ -22,6 +77,7 @@
                         >
                           {{ form.connection_flight_number }}
                         </span>
+                        <br />
                       </p>
                     </div>
                   </div>
@@ -159,6 +215,29 @@ import { format } from 'date-fns'
 definePageMeta({ layout: 'page' })
 useHead({ title: 'Add Flight' })
 
+const links = [
+  {
+    label: 'Home',
+    icon: 'i-heroicons-home',
+    to: '/',
+  },
+  {
+    label: 'flights',
+    icon: 'i-heroicons-table-cells',
+    to: '/flights',
+  },
+  {
+    label: 'freighters',
+    icon: 'i-heroicons-table-cells',
+    to: '/flights/freighters',
+  },
+  {
+    label: 'New',
+    icon: 'i-heroicons-table-cells',
+    to: '/flights/freighters/add',
+  },
+]
+
 const flightTypes = ['Arrival', 'Departure']
 const selectedFlightType = ref(flightTypes[0])
 const items = ref([])
@@ -177,6 +256,7 @@ const form = ref({
   ac_register: '',
   connection_id: null,
   connection_flight_number: '',
+  connection_flight_psd: '',
 })
 
 // Airline fetching logic (from your composable)
@@ -218,15 +298,17 @@ const openModal = () => {
   }
 }
 
-const updateConnectionId = (flight, flightNumber) => {
+const updateConnectionId = (flight, flightNumber, flightPsd) => {
   if (flight) {
     form.value.connection_id = flight
     form.value.connection_flight_number = flightNumber
+    form.value.connection_flight_psd = flightPsd
     showNotification.value = true
     setTimeout(() => (showNotification.value = false), 1200)
   } else {
     form.value.connection_id = null
     form.value.connection_flight_number = ''
+    form.value.connection_flight_psd = ''
   }
 }
 
@@ -238,6 +320,26 @@ const handleSubmit = async () => {
     console.error('Error adding freighter flight:', err)
     alert('Failed to add freighter flight.')
   }
+}
+
+const formatConnectionDate = (date) => {
+  return format(new Date(date), 'yyyy-MM-dd') // Adjust the date format if necessary
+}
+
+const formatConnectionTime = (date) => {
+  return format(new Date(date), 'HH:mm') // Adjust the time format if necessary
+}
+
+const stopBlinkingCaret = (elementRef) => {
+  nextTick(() => {
+    // Set a timeout to match the length of the typewriter animation and the initial delay
+    setTimeout(() => {
+      if (elementRef && elementRef.classList) {
+        elementRef.classList.add('hide-caret') // Hide the blinking caret
+        elementRef.classList.add('flash-background') // Trigger the background flash effect
+      }
+    }, 1000) // Total duration: 2s animation + 1s delay
+  })
 }
 </script>
 
@@ -256,6 +358,14 @@ const handleSubmit = async () => {
 .slide-up {
   animation: slideRight 0.5s ease-out;
 }
+.typewriter-placeholder {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 0.15em solid;
+  animation: typewriter 2s steps(40, end) 1s 1 normal both,
+    blink-caret 500ms steps(40, end) infinite;
+}
 
 @keyframes typewriter {
   from {
@@ -266,15 +376,6 @@ const handleSubmit = async () => {
   }
 }
 
-.typewriter-placeholder {
-  display: inline-block;
-  overflow: hidden;
-  white-space: nowrap;
-  border-right: 0.15em solid;
-  animation: typewriter 2s steps(40, end) 1s 1 normal both,
-    blink-caret 500ms steps(40, end) infinite;
-}
-
 @keyframes blink-caret {
   from,
   to {
@@ -283,5 +384,31 @@ const handleSubmit = async () => {
   50% {
     border-color: currentColor;
   }
+}
+
+@keyframes flash-background {
+  0% {
+    background-color: yellow;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.typewriter-effect {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 0.15em solid;
+  animation: typewriter 2s steps(40, end) 1s 1 normal both,
+    blink-caret 500ms steps(40, end) infinite;
+}
+
+.typewriter-effect.hide-caret {
+  border-right: none;
+}
+
+.typewriter-effect.flash-background {
+  animation: flash-background 0.5s ease-in-out forwards;
 }
 </style>

@@ -25,10 +25,6 @@ const links = [
     label: 'Flights',
     icon: 'i-heroicons-table-cells',
   },
-  {
-    label: 'Regular',
-    icon: 'mdi:invoice-text-scheduled',
-  },
 ]
 
 // Initialize useRapid composable

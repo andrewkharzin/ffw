@@ -211,11 +211,38 @@ onUnmounted(() => {
   >
     <template #header>
       <div class="flex flex-row">
-        <h2
-          class="font-semibold text-xl text-gray-900 dark:text-white leading-tight text-left"
-        >
-          Freighters
-        </h2>
+        <div class="basis-1/4">
+          <h2
+            class="mt-2 font-semibold text-xl text-gray-900 dark:text-white leading-tight text-left"
+          >
+            Freighters
+          </h2>
+        </div>
+        <div class="basis-1/2">
+          <div class="grid grid-cols-4 gap-1">
+            <UButton
+              variant="solid"
+              color="white"
+              v-if="selectedRows.length > 0"
+              @click="generateFFMPdf(selectedRows[0].parsedFFM)"
+            >
+              Manifest
+            </UButton>
+            <UButton
+              v-if="selectedRows.length > 0"
+              icon="i-heroicons-clock"
+              size="sm"
+              color="white"
+              variant="solid"
+              label="EST Check"
+              disabled
+              :trailing="false"
+            >
+            </UButton>
+          </div>
+        </div>
+        <div class="basis-1/4"></div>
+
         <!-- UToggle component with two-way binding for the toggle state -->
       </div>
       <div class="flex flex-row-reverse">
@@ -229,12 +256,6 @@ onUnmounted(() => {
           />
         </div>
       </div>
-      <UButton
-        v-if="selectedRows.length > 0"
-        @click="generateFFMPdf(selectedRows[0].parsedFFM)"
-      >
-        Download FFM Report
-      </UButton>
     </template>
 
     <!-- Table -->
@@ -334,7 +355,7 @@ onUnmounted(() => {
 
               <div v-if="showBlock" class="flex flex-col">
                 <p
-                  class="border-b border-gray-400 font-light uppercase text-xs text-gray-400 text-left"
+                  class="border-b border-gray-700 font-light uppercase text-xs text-gray-400 text-left"
                 >
                   <span
                     v-if="
@@ -343,7 +364,7 @@ onUnmounted(() => {
                       row.freighter_schedules.airlines.iata
                     "
                     @click="isModelOpen = true"
-                    class="p-1 hover:dark:text-pink-600 hover:text-lg"
+                    class="p-1 hover:dark:text-sky-300"
                   >
                     {{ row.freighter_schedules.airlines.iata }}
                     {{ row.freighter_schedules.flight_number }}

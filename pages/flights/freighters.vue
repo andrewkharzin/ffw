@@ -1,6 +1,9 @@
 <template>
   <LayoutsPageWrapper>
     <LayoutsPageSection>
+      <LayoutsPageHeader>
+        <UBreadcrumb :links="links" class="p-4" />
+      </LayoutsPageHeader>
       <!-- <SchedulerUiToolsbar /> -->
       <!-- Scheduler Toolbar -->
       <SchedulerUiToolsbar
@@ -65,6 +68,24 @@ import { parseFFM } from '@/utils/parsers/FFM'
 // Compiler micro
 definePageMeta({ layout: 'page' })
 useHead({ title: 'Freighters' })
+
+const links = [
+  {
+    label: 'Home',
+    icon: 'i-heroicons-home',
+    to: '/',
+  },
+  {
+    label: 'flights',
+    icon: 'i-heroicons-table-cells',
+    to: '/flights',
+  },
+  {
+    label: 'freighters',
+    icon: 'i-heroicons-table-cells',
+    to: '/flights/freighters',
+  },
+]
 
 const { freighters, loading, error, fetchFreighters, selectedFlightType } =
   useFreighters()
