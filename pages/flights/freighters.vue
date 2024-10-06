@@ -12,6 +12,7 @@
         @selectFlightType="selectFlightType"
         @testFFMParser="testFFMParser"
         @addFlight="navigateToAddFlight"
+        @deleteFlight="handleDeleteFlight"
       />
       <!-- Freighters Table -->
       <div class="mt-4">

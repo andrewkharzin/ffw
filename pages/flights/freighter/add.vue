@@ -14,55 +14,64 @@
                     <p class="text-sm font-light dark:text-gray-400">
                       Base information
                     </p>
+                    <!-- Success message -->
+                    <span v-if="successMessage" class="success-message">{{
+                      successMessage
+                    }}</span>
+
+                    <!-- Error message -->
+                    <span v-if="error" class="error-message">{{ error }}</span>
 
                     <!-- Block to display set form values -->
                     <div class="grid grid-cols-2 gap-2">
-                      <div>
+                      <div class="flex flex-col">
                         <p
                           v-if="form.flight_psd"
                           ref="flightPsdRef"
-                          class="typewriter-effect"
+                          class="typewriter-effect text-sm font-light"
                           @animationend="stopBlinkingCaret($refs.flightPsdRef)"
                         >
                           Flight PSD: {{ form.flight_psd }}
                         </p>
+                        <p
+                          v-if="form.flight_pst"
+                          ref="flightPstRef"
+                          class="typewriter-effect text-sm font-light"
+                          @animationend="stopBlinkingCaret($refs.flightPstRef)"
+                        >
+                          Flight PST: {{ form.flight_pst }}
+                        </p>
+                        <p
+                          v-if="form.flight_route"
+                          ref="flightRouteRef"
+                          class="typewriter-effect text-sm font-light"
+                          @animationend="
+                            stopBlinkingCaret($refs.flightRouteRef)
+                          "
+                        >
+                          Flight Route: {{ form.flight_route }}
+                        </p>
                       </div>
-
-                      <p
-                        v-if="form.flight_pst"
-                        ref="flightPstRef"
-                        class="typewriter-effect"
-                        @animationend="stopBlinkingCaret($refs.flightPstRef)"
-                      >
-                        Flight PST: {{ form.flight_pst }}
-                      </p>
-
-                      <p
-                        v-if="form.flight_number"
-                        ref="flightNumberRef"
-                        class="typewriter-effect"
-                        @animationend="stopBlinkingCaret($refs.flightNumberRef)"
-                      >
-                        Flight Number: {{ form.flight_number }}
-                      </p>
-
-                      <p
-                        v-if="form.flight_route"
-                        ref="flightRouteRef"
-                        class="typewriter-effect"
-                        @animationend="stopBlinkingCaret($refs.flightRouteRef)"
-                      >
-                        Flight Route: {{ form.flight_route }}
-                      </p>
-
-                      <p
-                        v-if="form.ac_register"
-                        ref="acRegisterRef"
-                        class="typewriter-effect"
-                        @animationend="stopBlinkingCaret($refs.acRegisterRef)"
-                      >
-                        Aircraft Registration: {{ form.ac_register }}
-                      </p>
+                      <div class="flex flex-col">
+                        <p
+                          v-if="form.flight_number"
+                          ref="flightNumberRef"
+                          class="typewriter-effect text-sm font-light"
+                          @animationend="
+                            stopBlinkingCaret($refs.flightNumberRef)
+                          "
+                        >
+                          Flight Number: {{ form.flight_number }}
+                        </p>
+                        <p
+                          v-if="form.ac_register"
+                          ref="acRegisterRef"
+                          class="typewriter-effect text-sm font-light"
+                          @animationend="stopBlinkingCaret($refs.acRegisterRef)"
+                        >
+                          Aircraft Registration: {{ form.ac_register }}
+                        </p>
+                      </div>
                     </div>
                     <div
                       v-if="form.connection_id"
@@ -122,6 +131,7 @@
                   <div class="flex flex-col space-y-4 md:space-y-6">
                     <UFormGroup label="Airline">
                       <SchedulerUiAirlineDropdown
+                        v-model="newFreighterData.airline"
                         :selected-airline="selectedAirline"
                         :airlines="airlines"
                         :is-loading="isLoading"
@@ -148,7 +158,6 @@
                         id="flight_route"
                         v-model="form.flight_route"
                         placeholder="Enter flight route"
-                        required
                       />
                     </UFormGroup>
                     <UFormGroup label="Connection flight">
@@ -158,20 +167,31 @@
                     </UFormGroup>
                   </div>
                 </div>
-              </UCard>
-
-              <UCard class="mt-4" background="slate-900/50">
-                <template #header>
-                  <p class="text-sm font-light dark:text-gray-400">
-                    Airline/Aircraft information
-                  </p>
-                </template>
+                <UButton
+                  class="mt-5"
+                  type="ghost"
+                  color="sky"
+                  :disabled="loading"
+                >
+                  <span v-if="loading" class="spinner"></span>
+                  <span v-if="!loading">Add Flight</span>
+                </UButton>
               </UCard>
             </div>
 
-            <div class="form-actions mt-4">
-              <UButton type="ghost" color="pink">Add Freighter Flight</UButton>
+            <!-- Success message Toast Modal -->
+            <div v-if="showToast" class="toast-modal">
+              <UCard>
+                <p>Flight added successfully!</p>
+                <!-- <button @click="goToFlights">Flights</button> -->
+                <button @click="addAnotherFlight">Add More</button>
+              </UCard>
             </div>
+
+            <!-- Error message -->
+            <span v-if="error" class="error-message">{{ error }}</span>
+
+            <div class="form-actions mt-4"></div>
           </form>
         </div>
       </div>
@@ -238,13 +258,18 @@ const links = [
   },
 ]
 
-const flightTypes = ['Arrival', 'Departure']
+const flightTypes = ['Inbound', 'Outbound']
 const selectedFlightType = ref(flightTypes[0])
 const items = ref([])
 const selectedAirline = ref(null)
 const isDropdownOpen = ref(false)
 const isOpen = ref(false)
 const showNotification = ref(false)
+const showToast = ref(false) // For showing the toast modal
+const successMessage = ref('')
+
+// Define the router instance for redirection
+const router = useRouter()
 
 const form = ref({
   flight_number: '',
@@ -260,7 +285,7 @@ const form = ref({
 })
 
 // Airline fetching logic (from your composable)
-const { airlines, isLoading, error, fetchAirlines } = useAirlinesForFreighter()
+const { airlines, isLoading, fetchAirlines } = useAirlinesForFreighter()
 
 // Fetch aircrafts
 const { aircrafts, fetchAircrafts } = useRegisterByIata()
@@ -280,10 +305,13 @@ onMounted(() => {
 })
 
 const selectAirline = (item) => {
-  form.value.airline = item.value
+  console.log('Selected Airline Item:', item)
+  newFreighterData.value.airline = item.iata // Adjust this if needed
   selectedAirline.value = item
   isDropdownOpen.value = false
-  fetchAircrafts(item.value)
+
+  console.log('Fetching Aircrafts for IATA code:', item.iata)
+  fetchAircrafts(item.iata)
 }
 
 const selectAircraft = (aircraft) => {
@@ -312,14 +340,86 @@ const updateConnectionId = (flight, flightNumber, flightPsd) => {
   }
 }
 
+const { addFreighterFlight, loading } = useFreighters()
+
+const newFreighterData = ref({
+  flight_number: form.value.flight_number, // Flight number (string)
+  flight_route: form.value.flight_route, // Route for the flight (string or array, depending on how you store it)
+  airline: '', // Airline code or name (string)
+  ac_register: '', // Aircraft registration (string)
+  flight_type: 'Inbound', // Flight type ('Inbound' or 'Outbound')
+  flight_psd: '', // Planned Start Date (datetime string)
+  flight_pst: '', // Planned Start Time (datetime string)
+  connection_id: null, // Connection ID if applicable (nullable, possibly a number or string)
+  flight_handling_status: '', // Handling status (string, can be values like 'scheduled', 'on-ground', 'departed', etc.)
+  airports: [], // Array of airport IATA codes in the flight route
+  aircrafts_register: '', // Aircraft registration details (string or object, depending on your schema)
+  freighter_schedules: [], // Nested freighter schedules (optional, depending on your use case)
+})
+
 const handleSubmit = async () => {
-  console.log('Submitting form:', form.value)
   try {
-    alert('Freighter flight added successfully!')
+    // Debugging: log form data before submission
+    console.log('Form data before submit:', form.value)
+
+    // Populate newFreighterData with form values
+    newFreighterData.value = {
+      flight_number: form.value.flight_number,
+      flight_route: form.value.flight_route,
+      // airline: form.value.airline, // Ensure this is correct
+
+      airline: selectedAirline.value?.iata || '', // Ensure this is correct
+      ac_register: form.value.ac_register,
+      flight_type: selectedFlightType.value,
+      flight_psd: form.value.flight_psd,
+      flight_pst: form.value.flight_pst,
+      connection_id: form.value.connection_id,
+    }
+
+    // Log the populated newFreighterData for debugging
+    console.log('newFreighterData:', newFreighterData.value)
+
+    // Extract IATA code and aircraft registration number
+    const iataCode = newFreighterData.value.airline
+    const aircraftRegistrationNumber = newFreighterData.value.ac_register
+
+    // Проверка IATA-кода
+    if (!iataCode) {
+      throw new Error('IATA code is required to fetch the airline.')
+    }
+
+    // Check for the presence of the aircraft registration number
+    if (!aircraftRegistrationNumber) {
+      throw new Error('Aircraft registration number is required.')
+    }
+
+    // If all checks are passed, proceed to add the freighter flight
+    await addFreighterFlight(newFreighterData.value)
+
+    // Show the success toast modal after submission
+    showToast.value = true
   } catch (err) {
-    console.error('Error adding freighter flight:', err)
-    alert('Failed to add freighter flight.')
+    console.error('Failed to add freighter flight:', err)
+    err.value = 'Failed to add freighter flight. Please try again later.'
+  } finally {
+    loading.value = false
   }
+}
+
+const goToFlights = () => {
+  // Redirect the user to the /flights/freighters page
+  router.push('/flights/freighters')
+}
+
+const addAnotherFlight = () => {
+  // Clear the form and hide the toast modal
+  resetForm()
+  showToast.value = false
+}
+
+const resetForm = () => {
+  // Reset form fields here
+  successMessage.value = ''
 }
 
 const formatConnectionDate = (date) => {
@@ -410,5 +510,62 @@ const stopBlinkingCaret = (elementRef) => {
 
 .typewriter-effect.flash-background {
   animation: flash-background 0.5s ease-in-out forwards;
+}
+
+.success-message {
+  color: green;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.error-message {
+  color: red;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.spinner {
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #000;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Toast Modal Styles */
+.toast-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: transparent;
+  padding: 20px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  text-align: center;
+  z-index: 1000;
+}
+
+.toast-modal button {
+  margin: 10px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.toast-modal button:hover {
+  background-color: #0056b3;
 }
 </style>

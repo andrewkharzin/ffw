@@ -39,46 +39,13 @@ const columns = [
     sortable: false,
     width: '10%', // Fixed width
   },
-  // {
-  //   key: 'flight_pst',
-  //   label: 'Time',
-  //   sortable: false,
-  // },
-
-  // {
-  //   key: 'flight_number',
-  //   label: 'Flight Number',
-  //   sortable: true,
-  // },
   {
     key: 'flight_route',
     label: 'Route',
     sortable: true,
     width: '30%', // Fixed width
   },
-  // {
-  //   key: 'flight_handling_status',
-  //   label: 'Status',
-  //   sortable: true,
-  // },
-  // {
-  //   key: 'payload',
-  //   label: 'Payload',
-  //   sortable: false,
-  // },
-  // {
-  //   key: 'actions',
-  //   label: 'Actions',
-  //   sortable: false,
-  // },
 ]
-
-const selectedColumns = ref(columns)
-// const columnsTable = computed(
-//   () => columns.filter((column) => selectedColumns.value.includes(column)),
-//   // Remove 'Actions' column if it's a small screen
-//   isSmallScreen.value ? columns.key !== 'actions' : true
-// )
 
 // Compute the columns for the table, conditionally hide 'Actions', 'Payload', and 'Flight Route' columns on small screens
 const columnsTable = computed(
@@ -111,12 +78,52 @@ const actions = [
   ],
 ]
 
+const { deleteFreighterFlight, error } = useFreighters()
 function select(row) {
+  if (!row || !row.id) {
+    console.error('Invalid row passed to select:', row) // Log row for debugging
+    return
+  }
+
   const index = selectedRows.value.findIndex((item) => item.id === row.id)
   if (index === -1) {
+    // Add the row to the selected rows
     selectedRows.value.push(row)
+    console.log('Row selected:', row)
   } else {
+    // Remove the row from the selected rows
     selectedRows.value.splice(index, 1)
+    console.log('Row deselected:', row)
+  }
+
+  // Log the current selected rows for debugging
+  console.log('Current selected rows:', selectedRows.value)
+}
+
+const handleDelete = async () => {
+  // Log selected rows before attempting to delete
+  console.log('Selected rows for deletion:', selectedRows.value)
+
+  if (selectedRows.value.length === 0) {
+    alert('No rows selected for deletion')
+    return
+  }
+
+  if (
+    confirm('Are you sure you want to delete the selected freighter flights?')
+  ) {
+    for (const row of selectedRows.value) {
+      try {
+        console.log('Deleting row with id:', row.id) // Log the id being deleted
+        await deleteFreighterFlight(row.id) // Delete each selected row
+      } catch (e) {
+        console.error('Error deleting freighter flight:', e)
+      }
+    }
+
+    // Clear the selected rows after deletion
+    selectedRows.value = []
+    console.log('Deletion complete. Cleared selected rows.')
   }
 }
 
@@ -144,23 +151,6 @@ function getStatusColor(status: string): string {
     default:
       return 'orange' // default color if status is not recognized
   }
-}
-
-// Reactivity for selected flight
-
-// Modal Logic
-const selectedFlight = ref(null) // добавляем реактивное состояние
-const isModelOpen = ref(false)
-const selectedConnection = ref(null)
-
-function openConnectionModal(connectionFlight: any) {
-  selectedConnection.value = connectionFlight
-  isOpen.value = true
-}
-
-function closeConnectionModal() {
-  isOpen.value = false
-  selectedConnection.value = null
 }
 
 // Function to check if a message type exists for a freighter
@@ -221,9 +211,9 @@ onUnmounted(() => {
         <div class="basis-1/2">
           <div class="grid grid-cols-4 gap-1">
             <UButton
+              v-if="selectedRows.length > 0"
               variant="solid"
               color="white"
-              v-if="selectedRows.length > 0"
               @click="generateFFMPdf(selectedRows[0].parsedFFM)"
             >
               Manifest
@@ -239,6 +229,19 @@ onUnmounted(() => {
               :trailing="false"
             >
             </UButton>
+            <!-- Delete Flight Button -->
+            <!-- <UButton
+              color="red"
+              variant="soft"
+              size="sm"
+              v-if="selectedRows.length > 0"
+              @click="deleteFreighter(freighter.id)"
+            >
+              Delete Flight
+            </UButton> -->
+            <button :disabled="selectedRows.length === 0" @click="handleDelete">
+              Delete Selected
+            </button>
           </div>
         </div>
         <div class="basis-1/4"></div>
@@ -290,7 +293,7 @@ onUnmounted(() => {
         <SchedulerUiScheduledTime
           :eta="'14:55 29/08/24'"
           :ata="'15:01 29/08/24'"
-          :isSmallScreen="false"
+          :is-small-screen="false"
         />
         <!-- <div class="freighter-header flex flex-col text-left">
           <div>
@@ -363,8 +366,8 @@ onUnmounted(() => {
                       row.freighter_schedules.flight_number &&
                       row.freighter_schedules.airlines.iata
                     "
-                    @click="isModelOpen = true"
                     class="p-1 hover:dark:text-sky-300"
+                    @click="isModelOpen = true"
                   >
                     {{ row.freighter_schedules.airlines.iata }}
                     {{ row.freighter_schedules.flight_number }}
